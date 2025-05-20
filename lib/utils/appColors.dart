@@ -12,9 +12,9 @@ class AppColors {
   static const Color subButton = Color(0xFF515151);
   static const Color bannerbrown = Color(0xFF534203);
   static const Color lightbrown = Color(0xFFA7860E);
+  static const Color highlightbrown = Color(0xFFB18A6B);
   static const Color Inicator = Color(0xFFE7E7E7);
   static const Color CardBg = Color(0xFFB0B0B0);
   static const Color ActiveIndicator = Color(0xFFDBE6FF);
   static const Color PurpleColor = Color(0xFF683AED);
-
 }
