@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/create_account_page.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/btn_text.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/clickable_text.dart';
 import 'package:thriftale/widgets/custom_button.dart';
@@ -121,9 +123,11 @@ class _SigninPageState extends State<SigninPage> {
               bottom: 30, // Adjust this value to control how far from bottom
               child: Center(
                 child: ClickableText(
-                  text: 'Continue Without Login',
+                  text: 'Havent account? Register now',
                   onTap: () {
                     // Your onTap logic here
+                    NavigationUtils.frontNavigation(
+                        context, CreateAccountPage());
                   },
                   color: Colors.black,
                   fontSize: 14.0,
