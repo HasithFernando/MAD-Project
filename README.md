@@ -1,4 +1,4 @@
-# madproject
+# thriftale
 
 A new Flutter project.
 

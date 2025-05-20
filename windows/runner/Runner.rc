@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.madproject" "\0"
-            VALUE "FileDescription", "madproject" "\0"
+            VALUE "CompanyName", "com.thriftle" "\0"
+            VALUE "FileDescription", "thriftale" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "madproject" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.madproject. All rights reserved." "\0"
-            VALUE "OriginalFilename", "madproject.exe" "\0"
-            VALUE "ProductName", "madproject" "\0"
+            VALUE "InternalName", "thriftale" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.thriftle. All rights reserved." "\0"
+            VALUE "OriginalFilename", "thriftale.exe" "\0"
+            VALUE "ProductName", "thriftale" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

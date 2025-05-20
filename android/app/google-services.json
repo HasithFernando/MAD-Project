@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "825724032753",
+    "project_id": "thriftale-shop",
+    "storage_bucket": "thriftale-shop.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825724032753:android:c1e358f450e5f592a13b50",
+        "android_client_info": {
+          "package_name": "com.thriftle.thriftale"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuekNFwIsXFUBtnX4NY_WGMueIEBv2QN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

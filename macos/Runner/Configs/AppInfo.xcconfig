@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = madproject
+PRODUCT_NAME = thriftale
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.madproject.madproject
+PRODUCT_BUNDLE_IDENTIFIER = com.thriftle.thriftale
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.madproject. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 com.thriftle. All rights reserved.

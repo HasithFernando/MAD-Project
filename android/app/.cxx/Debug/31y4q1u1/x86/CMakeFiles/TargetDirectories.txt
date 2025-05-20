@@ -1,0 +1,2 @@
+/Users/dhanushkadilshan/Documents/GitHub/Thriftale/thriftale/android/app/.cxx/Debug/31y4q1u1/x86/CMakeFiles/edit_cache.dir
+/Users/dhanushkadilshan/Documents/GitHub/Thriftale/thriftale/android/app/.cxx/Debug/31y4q1u1/x86/CMakeFiles/rebuild_cache.dir

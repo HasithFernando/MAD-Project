@@ -1,6 +1,6 @@
 {
-    "name": "madproject",
-    "short_name": "madproject",
+    "name": "thriftale",
+    "short_name": "thriftale",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
