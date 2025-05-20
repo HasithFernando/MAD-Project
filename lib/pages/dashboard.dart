@@ -13,7 +13,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          children: [Text('Dhanusha pada')],
+          children: [Text('hello world')],
         ),
       ),
     );
