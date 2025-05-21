@@ -5,6 +5,7 @@ import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
 import 'package:thriftale/widgets/newBottomBar.dart';
+import 'package:thriftale/widgets/product_card.dart';
 import 'package:thriftale/widgets/reusable_category_widget.dart';
 import 'package:thriftale/widgets/slider_widget.dart';
 
@@ -114,7 +115,7 @@ class _HomeState extends State<Home> {
       body: SafeArea(
         child: Column(
           children: [
-            // Add the SearchNotificationWidget below the app bar
+            // Search and notification widget - keep this outside the scrollable area
             SearchNotificationWidget(
               placeholder: "Search for products",
               notificationCount: 3, // Set your notification count here
@@ -128,64 +129,159 @@ class _HomeState extends State<Home> {
               },
             ),
 
-            // Add the AutoSlider widget here, after the search bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: AutoSlider(
-                slides: slides,
-                autoSlideDuration: const Duration(seconds: 3),
-                height: 180,
-              ),
-            ),
-
-            // Rest of your home screen content below
+            // Make the rest of the content scrollable
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CustomText(
-                            text: 'Category',
-                            color: AppColors.black,
-                            fontSize: LableTexts.subLable,
-                            fontWeight: FontWeight.w600),
-                        CustomText(
-                            text: 'See more',
-                            color: const Color.fromARGB(255, 235, 78, 78),
-                            fontSize: ParagraphTexts.normalParagraph,
-                            fontWeight: FontWeight.w600),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
+                    // Auto slider
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: AutoSlider(
+                        slides: slides,
+                        autoSlideDuration: const Duration(seconds: 3),
+                        height: 180,
+                      ),
                     ),
 
-                    //horizontal slider
-                    CategoryList(categories: categories),
+                    // Categories section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CustomText(
+                                  text: 'Category',
+                                  color: AppColors.black,
+                                  fontSize: LableTexts.subLable,
+                                  fontWeight: FontWeight.w600),
+                              CustomText(
+                                  text: 'See more',
+                                  color: const Color.fromARGB(255, 235, 78, 78),
+                                  fontSize: ParagraphTexts.normalParagraph,
+                                  fontWeight: FontWeight.w600),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
 
-                    const SizedBox(
-                      height: 30,
-                    ),
+                          // Category list
+                          CategoryList(categories: categories),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CustomText(
-                            text: 'Latest Products',
-                            color: AppColors.black,
-                            fontSize: LableTexts.subLable,
-                            fontWeight: FontWeight.w600),
-                        CustomText(
-                            text: 'See more',
-                            color: const Color.fromARGB(255, 235, 78, 78),
-                            fontSize: ParagraphTexts.normalParagraph,
-                            fontWeight: FontWeight.w600),
-                      ],
+                          const SizedBox(height: 30),
+
+                          // Latest products section
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CustomText(
+                                  text: 'Latest Products',
+                                  color: AppColors.black,
+                                  fontSize: LableTexts.subLable,
+                                  fontWeight: FontWeight.w600),
+                              GestureDetector(
+                                onTap: () {
+                                  print('See all products tapped');
+                                  // Add navigation to all products page
+                                },
+                                child: CustomText(
+                                    text: 'See all',
+                                    color:
+                                        const Color.fromARGB(255, 235, 78, 78),
+                                    fontSize: ParagraphTexts.normalParagraph,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 15),
+
+                          // Grid layout for products - first row
+                          Row(
+                            children: [
+                              // First product in row
+                              Expanded(
+                                child: ProductCard(
+                                  imageUrl: 'assets/images/shirt.png',
+                                  title: 'Mens Shirt 🍃',
+                                  location: 'Colombo',
+                                  timeAgo: '2 days ago',
+                                  price: 'Rs. 1000.00',
+                                  sustainabilityText: 'Saves 0.2kg CO2',
+                                  height: 280,
+                                  width: double.infinity,
+                                  borderRadius: 12,
+                                  onTap: () {
+                                    print('Mens Shirt tapped!');
+                                  },
+                                ),
+                              ),
+                              // Second product in row
+                              Expanded(
+                                child: ProductCard(
+                                  imageUrl: 'assets/images/trouser.png',
+                                  title: 'Trouser',
+                                  location: 'Colombo',
+                                  timeAgo: '2 days ago',
+                                  price: 'Rs. 3000.00',
+                                  sustainabilityText: 'Saves 0.2kg CO2',
+                                  height: 280,
+                                  width: double.infinity,
+                                  borderRadius: 12,
+                                  onTap: () {
+                                    print('Trouser tapped!');
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Grid layout for products - second row
+                          Row(
+                            children: [
+                              // First product in row
+                              Expanded(
+                                child: ProductCard(
+                                  imageUrl: 'assets/images/tshirt.png',
+                                  title: 'Mens T-Shirt',
+                                  location: 'Colombo',
+                                  timeAgo: '2 days ago',
+                                  price: 'Rs. 1000.00',
+                                  sustainabilityText: 'Saves 0.2kg CO2',
+                                  height: 280,
+                                  width: double.infinity,
+                                  borderRadius: 12,
+                                  onTap: () {
+                                    print('Mens T-Shirt tapped!');
+                                  },
+                                ),
+                              ),
+                              // Second product in row
+                              Expanded(
+                                child: ProductCard(
+                                  imageUrl: 'assets/images/fullshirt.png',
+                                  title: 'Full shirt',
+                                  location: 'Colombo',
+                                  timeAgo: '2 days ago',
+                                  price: 'Rs. 3000.00',
+                                  sustainabilityText: 'Saves 0.2 kg CO2',
+                                  height: 280,
+                                  width: double.infinity,
+                                  borderRadius: 12,
+                                  onTap: () {
+                                    print('Full shirt tapped!');
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Add padding at the bottom to ensure the last item is visible
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     ),
                   ],
                 ),
