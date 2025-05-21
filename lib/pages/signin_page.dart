@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/complete_profile.dart';
 import 'package:thriftale/pages/create_account_page.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/btn_text.dart';

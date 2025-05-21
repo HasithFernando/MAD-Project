@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/complete_profile.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/btn_text.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/clickable_text.dart';
 import 'package:thriftale/widgets/custom_button.dart';
@@ -158,7 +160,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                                 width: double.infinity,
                                 height: 52,
                                 borderRadius: 100,
-                                onPressed: () {}),
+                                onPressed: () {
+                                  NavigationUtils.frontNavigation(
+                                      context, CompleteProfilePage());
+                                }),
                           ],
                         ),
                       ),
