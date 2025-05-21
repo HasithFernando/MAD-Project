@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/btn_text.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/custom_button.dart';
 import 'package:thriftale/widgets/custom_text.dart';
@@ -202,6 +204,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                         borderRadius: 100,
                         onPressed: () {
                           // Navigate to the next screen or complete registration
+                          NavigationUtils.frontNavigation(context, Home());
                         }),
                   ],
                 ),

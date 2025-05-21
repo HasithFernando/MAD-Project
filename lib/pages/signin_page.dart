@@ -37,7 +37,7 @@ class _SigninPageState extends State<SigninPage> {
                       child: Column(
                         children: [
                           CustomText(
-                              text: 'Signin',
+                              text: 'Sign in',
                               color: AppColors.black,
                               fontSize: LableTexts.startLable,
                               fontWeight: FontWeight.w600),
