@@ -17,4 +17,5 @@ class AppColors {
   static const Color CardBg = Color(0xFFB0B0B0);
   static const Color ActiveIndicator = Color(0xFFDBE6FF);
   static const Color PurpleColor = Color(0xFF683AED);
+  static const Color categoryColor = Color.fromARGB(255, 250, 209, 155);
 }
