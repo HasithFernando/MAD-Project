@@ -4,6 +4,7 @@ import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
+import 'package:thriftale/widgets/newBottomBar.dart';
 import 'package:thriftale/widgets/reusable_category_widget.dart';
 import 'package:thriftale/widgets/slider_widget.dart';
 
@@ -98,78 +99,111 @@ class _HomeState extends State<Home> {
         },
       ),
     ];
-    //
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
         title: Image.asset(
           'assets/images/Thriftale.png',
           height: 40, // Adjust height as needed
         ),
       ),
-      body: Column(
-        children: [
-          // Add the SearchNotificationWidget below the app bar
-          SearchNotificationWidget(
-            placeholder: "Search for products",
-            notificationCount: 3, // Set your notification count here
-            onSearchTap: () {
-              // Navigate to search screen or show search dialog
-              print('Search tapped');
-            },
-            onNotificationTap: () {
-              // Navigate to notifications screen
-              print('Notification tapped');
-            },
-          ),
-
-          // Add the AutoSlider widget here, after the search bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: AutoSlider(
-              slides: slides,
-              autoSlideDuration: const Duration(seconds: 3),
-              height: 180,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Add the SearchNotificationWidget below the app bar
+            SearchNotificationWidget(
+              placeholder: "Search for products",
+              notificationCount: 3, // Set your notification count here
+              onSearchTap: () {
+                // Navigate to search screen or show search dialog
+                print('Search tapped');
+              },
+              onNotificationTap: () {
+                // Navigate to notifications screen
+                print('Notification tapped');
+              },
             ),
-          ),
 
-          // Rest of your home screen content below
-          Expanded(
-            child: Padding(
+            // Add the AutoSlider widget here, after the search bar
+            Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CustomText(
-                          text: 'Category',
-                          color: AppColors.black,
-                          fontSize: LableTexts.subLable,
-                          fontWeight: FontWeight.w600),
-                      CustomText(
-                          text: 'See more',
-                          color: const Color.fromARGB(255, 235, 78, 78),
-                          fontSize: ParagraphTexts.normalParagraph,
-                          fontWeight: FontWeight.w600),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-
-                  //horizontal slider
-                  CategoryList(categories: categories)
-                ],
+              child: AutoSlider(
+                slides: slides,
+                autoSlideDuration: const Duration(seconds: 3),
+                height: 180,
               ),
             ),
-          ),
-        ],
+
+            // Rest of your home screen content below
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CustomText(
+                            text: 'Category',
+                            color: AppColors.black,
+                            fontSize: LableTexts.subLable,
+                            fontWeight: FontWeight.w600),
+                        CustomText(
+                            text: 'See more',
+                            color: const Color.fromARGB(255, 235, 78, 78),
+                            fontSize: ParagraphTexts.normalParagraph,
+                            fontWeight: FontWeight.w600),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+
+                    //horizontal slider
+                    CategoryList(categories: categories),
+
+                    const SizedBox(
+                      height: 30,
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CustomText(
+                            text: 'Latest Products',
+                            color: AppColors.black,
+                            fontSize: LableTexts.subLable,
+                            fontWeight: FontWeight.w600),
+                        CustomText(
+                            text: 'See more',
+                            color: const Color.fromARGB(255, 235, 78, 78),
+                            fontSize: ParagraphTexts.normalParagraph,
+                            fontWeight: FontWeight.w600),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        height: 70,
+        alignment: Alignment.center,
+        child: NewBottomBar(
+          c1: AppColors.black,
+          c2: AppColors.lightGray,
+          c3: AppColors.lightGray,
+          c4: AppColors.lightGray,
+        ),
       ),
     );
   }
 }
-
-// Include the SearchNotificationWidget class from your code

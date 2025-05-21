@@ -62,7 +62,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
                           Container(
                             color: Colors.transparent,
                             child: Icon(
-                              Icons.home_outlined,
+                              Icons.home_filled,
                               size: 28,
                               color: widget.c1,
                             ),
@@ -88,7 +88,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
                           Container(
                             color: Colors.transparent,
                             child: Icon(
-                              Icons.emoji_events_outlined,
+                              Icons.category,
                               size: 28,
                               color: widget.c2,
                             ),
