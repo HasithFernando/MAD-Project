@@ -4,6 +4,7 @@ import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
+import 'package:thriftale/widgets/grid_item_model.dart';
 import 'package:thriftale/widgets/newBottomBar.dart';
 import 'package:thriftale/widgets/product_card.dart';
 import 'package:thriftale/widgets/reusable_category_widget.dart';
@@ -97,6 +98,81 @@ class _HomeState extends State<Home> {
         text: 'Pants',
         onTap: () {
           print('Pants category tapped');
+        },
+      ),
+    ];
+
+    List<GridItemModel> sampleItems = [
+      GridItemModel(
+        title: 'Latest Products',
+        location: 'Colombo',
+        timeAgo: '2 days ago',
+        price: 'Rs. 1000.00',
+        carbonSave: 'Saves 0.2kg CO2',
+        imageUrl:
+            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
+        onTap: () {
+          print('Item 1 tapped');
+        },
+      ),
+      GridItemModel(
+        title: 'Fresh Vegetables',
+        location: 'Galle',
+        timeAgo: '1 day ago',
+        price: 'Rs. 750.00',
+        carbonSave: 'Saves 0.3kg CO2',
+        imageUrl:
+            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
+        onTap: () {
+          print('Item 2 tapped');
+        },
+      ),
+      GridItemModel(
+        title: 'Organic Fruits',
+        location: 'Kandy',
+        timeAgo: '3 hours ago',
+        price: 'Rs. 1500.00',
+        carbonSave: 'Saves 0.5kg CO2',
+        imageUrl:
+            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
+        onTap: () {
+          print('Item 3 tapped');
+        },
+      ),
+      GridItemModel(
+        title: 'Organic Fruits',
+        location: 'Kandy',
+        timeAgo: '3 hours ago',
+        price: 'Rs. 1500.00',
+        carbonSave: 'Saves 0.5kg CO2',
+        imageUrl:
+            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
+        onTap: () {
+          print('Item 3 tapped');
+        },
+      ),
+      GridItemModel(
+        title: 'Organic Fruits',
+        location: 'Kandy',
+        timeAgo: '3 hours ago',
+        price: 'Rs. 1500.00',
+        carbonSave: 'Saves 0.5kg CO2',
+        imageUrl:
+            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
+        onTap: () {
+          print('Item 3 tapped');
+        },
+      ),
+      GridItemModel(
+        title: 'Organic Fruits',
+        location: 'Kandy',
+        timeAgo: '3 hours ago',
+        price: 'Rs. 1500.00',
+        carbonSave: 'Saves 0.5kg CO2',
+        imageUrl:
+            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
+        onTap: () {
+          print('Item 3 tapped');
         },
       ),
     ];
@@ -198,87 +274,12 @@ class _HomeState extends State<Home> {
                           ),
                           const SizedBox(height: 15),
 
-                          // Grid layout for products - first row
-                          Row(
-                            children: [
-                              // First product in row
-                              Expanded(
-                                child: ProductCard(
-                                  imageUrl: 'assets/images/shirt.png',
-                                  title: 'Mens Shirt 🍃',
-                                  location: 'Colombo',
-                                  timeAgo: '2 days ago',
-                                  price: 'Rs. 1000.00',
-                                  sustainabilityText: 'Saves 0.2kg CO2',
-                                  height: 280,
-                                  width: double.infinity,
-                                  borderRadius: 12,
-                                  onTap: () {
-                                    print('Mens Shirt tapped!');
-                                  },
-                                ),
-                              ),
-                              // Second product in row
-                              Expanded(
-                                child: ProductCard(
-                                  imageUrl: 'assets/images/trouser.png',
-                                  title: 'Trouser',
-                                  location: 'Colombo',
-                                  timeAgo: '2 days ago',
-                                  price: 'Rs. 3000.00',
-                                  sustainabilityText: 'Saves 0.2kg CO2',
-                                  height: 280,
-                                  width: double.infinity,
-                                  borderRadius: 12,
-                                  onTap: () {
-                                    print('Trouser tapped!');
-                                  },
-                                ),
-                              ),
-                            ],
+                          CustomGridWidget(
+                            items: sampleItems,
+                            spacing: 16.0,
+                            itemHeight: 320.0,
                           ),
 
-                          // Grid layout for products - second row
-                          Row(
-                            children: [
-                              // First product in row
-                              Expanded(
-                                child: ProductCard(
-                                  imageUrl: 'assets/images/tshirt.png',
-                                  title: 'Mens T-Shirt',
-                                  location: 'Colombo',
-                                  timeAgo: '2 days ago',
-                                  price: 'Rs. 1000.00',
-                                  sustainabilityText: 'Saves 0.2kg CO2',
-                                  height: 280,
-                                  width: double.infinity,
-                                  borderRadius: 12,
-                                  onTap: () {
-                                    print('Mens T-Shirt tapped!');
-                                  },
-                                ),
-                              ),
-                              // Second product in row
-                              Expanded(
-                                child: ProductCard(
-                                  imageUrl: 'assets/images/fullshirt.png',
-                                  title: 'Full shirt',
-                                  location: 'Colombo',
-                                  timeAgo: '2 days ago',
-                                  price: 'Rs. 3000.00',
-                                  sustainabilityText: 'Saves 0.2 kg CO2',
-                                  height: 280,
-                                  width: double.infinity,
-                                  borderRadius: 12,
-                                  onTap: () {
-                                    print('Full shirt tapped!');
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // Add padding at the bottom to ensure the last item is visible
                           const SizedBox(height: 20),
                         ],
                       ),
