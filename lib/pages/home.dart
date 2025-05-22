@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/categories_page.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
@@ -112,7 +114,7 @@ class _HomeState extends State<Home> {
         imageUrl:
             'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
         onTap: () {
-          print('Item 1 tapped');
+          NavigationUtils.frontNavigation(context, CategoriesPage());
         },
       ),
       GridItemModel(
