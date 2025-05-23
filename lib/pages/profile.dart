@@ -255,7 +255,7 @@ class _ProfileState extends State<Profile> {
         height: 70,
         alignment: Alignment.center,
         child: NewBottomBar(
-          c1: AppColors.black,
+          c1: AppColors.lightGray,
           c2: AppColors.lightGray,
           c3: AppColors.lightGray,
           c4: AppColors.black,

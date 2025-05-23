@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/cart.dart';
 import 'package:thriftale/pages/categories_page.dart';
 import 'package:thriftale/pages/dashboard.dart';
 import 'package:thriftale/pages/home.dart';
@@ -108,7 +109,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      NavigationUtils.navBarNavigation(context, Dashboard());
+                      NavigationUtils.navBarNavigation(context, Cart());
                     },
                     child: Container(
                       color: Colors.transparent,
