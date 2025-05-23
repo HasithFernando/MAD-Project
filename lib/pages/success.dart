@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/home.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 
 class Success extends StatefulWidget {
   const Success({super.key});
@@ -248,7 +250,7 @@ class _SuccessState extends State<Success> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Add navigation logic here
-                    Navigator.pop(context);
+                    NavigationUtils.frontNavigation(context, Home());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB8956B),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/achievements.dart';
 import 'package:thriftale/pages/checkout.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
@@ -208,8 +209,7 @@ class _ProfileState extends State<Profile> {
                     title: 'My Achievements',
                     subtitle: 'Level 2',
                     onTap: () {
-                      // Your onTap logic here
-                      print('Dashboard tile tapped');
+                      NavigationUtils.frontNavigation(context, Achievements());
                     },
                   ),
                   SizedBox(
@@ -220,7 +220,7 @@ class _ProfileState extends State<Profile> {
                     subtitle: 'Visa  **34',
                     onTap: () {
                       // Your onTap logic here
-                      print('Dashboard tile tapped');
+                      // print('Dashboard tile tapped');
                       NavigationUtils.frontNavigation(context, Checkout());
                     },
                   ),
