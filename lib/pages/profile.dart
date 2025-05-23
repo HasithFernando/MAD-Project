@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/checkout.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
@@ -219,6 +221,7 @@ class _ProfileState extends State<Profile> {
                     onTap: () {
                       // Your onTap logic here
                       print('Dashboard tile tapped');
+                      NavigationUtils.frontNavigation(context, Checkout());
                     },
                   ),
 
