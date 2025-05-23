@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:thriftale/pages/categories_page.dart';
 import 'package:thriftale/pages/dashboard.dart';
 import 'package:thriftale/pages/home.dart';
+import 'package:thriftale/pages/profile.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/widgets/custom_text.dart';
@@ -132,7 +133,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      NavigationUtils.navBarNavigation(context, Dashboard());
+                      NavigationUtils.navBarNavigation(context, Profile());
                     },
                     child: Container(
                       color: Colors.transparent,
