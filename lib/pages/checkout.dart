@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/success.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/custom_button.dart';
 import 'package:thriftale/widgets/custom_text.dart';
@@ -254,7 +256,7 @@ class _CheckoutState extends State<Checkout> {
                         height: 52,
                         borderRadius: 50,
                         onPressed: () {
-                          // Handle submit order
+                          NavigationUtils.frontNavigation(context, Success());
                         },
                       ),
 
