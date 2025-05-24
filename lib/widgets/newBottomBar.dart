@@ -99,7 +99,7 @@ class _NewBottomBarState extends State<NewBottomBar> {
                             ),
                           ),
                           CustomText(
-                              text: 'Top Board',
+                              text: 'Categories',
                               color: widget.c2,
                               fontSize: 12,
                               fontWeight: FontWeight.w600),
@@ -118,13 +118,13 @@ class _NewBottomBarState extends State<NewBottomBar> {
                           Container(
                             color: Colors.transparent,
                             child: Icon(
-                              Icons.rocket_launch_outlined,
+                              Icons.shopping_cart_checkout,
                               size: 28,
                               color: widget.c3,
                             ),
                           ),
                           CustomText(
-                              text: 'Challenge',
+                              text: 'Cart',
                               color: widget.c3,
                               fontSize: 12,
                               fontWeight: FontWeight.w600),

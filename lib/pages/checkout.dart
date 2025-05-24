@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:thriftale/pages/success.dart';
+import 'package:thriftale/pages/cart.dart'; // Add this import for Cart page
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
@@ -22,23 +23,30 @@ class _CheckoutState extends State<Checkout> {
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed header
+            // Fixed header with working back button
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pop(context);
+                      // Use NavigationUtils to go back to Cart page
+                      NavigationUtils.frontNavigation(context, Cart());
                     },
+                    borderRadius:
+                        BorderRadius.circular(20), // Better touch feedback
                     child: Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(1000),
+                        borderRadius: BorderRadius.circular(20),
                         color: AppColors.CardBg,
                       ),
-                      child: Image.asset('assets/images/backBtn.png'),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.black,
+                        size: 18,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -99,6 +107,7 @@ class _CheckoutState extends State<Checkout> {
                                 GestureDetector(
                                   onTap: () {
                                     // Handle change address action
+                                    print('Change address tapped');
                                   },
                                   child: CustomText(
                                     text: 'Change',
@@ -166,6 +175,7 @@ class _CheckoutState extends State<Checkout> {
                                 GestureDetector(
                                   onTap: () {
                                     // Handle change payment method action
+                                    print('Change payment method tapped');
                                   },
                                   child: CustomText(
                                     text: 'Change',
@@ -233,10 +243,16 @@ class _CheckoutState extends State<Checkout> {
                       // Order Summary Section
                       _buildSummaryRow('Order:', 'Rs. 1240.00'),
                       const SizedBox(height: 10),
-                      _buildSummaryRow('Delivery:', '2 kg'),
+                      _buildSummaryRow('Delivery:', 'Free'),
                       const SizedBox(height: 10),
-                      _buildSummaryRow('Summary:', '2 kg'),
-                      const SizedBox(height: 10),
+                      _buildSummaryRow('Total:', 'Rs. 1240.00'),
+                      const SizedBox(height: 15),
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: Colors.grey.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 15),
                       _buildSummaryRow('Carbon Saved:', '2 kg'),
                       const SizedBox(height: 10),
                       _buildSummaryRow(
