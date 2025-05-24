@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/checkout.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:thriftale/utils/paragraph_texts.dart';
 import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_button.dart';
@@ -153,7 +155,9 @@ class _CartState extends State<Cart> {
                         width: double.infinity,
                         height: 52,
                         borderRadius: 50,
-                        onPressed: () {}),
+                        onPressed: () {
+                          NavigationUtils.frontNavigation(context, Checkout());
+                        }),
                     // Add some bottom padding to account for the bottom navigation
                     SizedBox(height: 20),
                   ],
