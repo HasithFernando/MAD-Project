@@ -230,45 +230,40 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                               SizedBox(
                                 height: 20,
                               ),
-                              //terms and condition row section
+                              //terms and condition row section - FIXED
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Checkbox(
-                                          value: _agreeToTerms,
-                                          onChanged: (bool? value) {
-                                            setState(() {
-                                              _agreeToTerms = value ?? false;
-                                            });
-                                          }),
-                                      Flexible(
-                                        child: Row(
-                                          children: [
-                                            CustomText(
-                                                text: 'Agree with ',
-                                                color: AppColors.black,
-                                                fontSize: ParagraphTexts
-                                                    .normalParagraph,
-                                                fontWeight: FontWeight.normal),
-                                            Flexible(
-                                              child: ClickableText(
-                                                text: 'Terms & Conditions',
-                                                onTap: () {
-                                                  // Show terms and conditions
-                                                  _showTermsDialog();
-                                                },
-                                                color: Colors.black,
-                                                fontSize: 14.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
+                                  Checkbox(
+                                    value: _agreeToTerms,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        _agreeToTerms = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                  Expanded(
+                                    child: Wrap(
+                                      children: [
+                                        CustomText(
+                                          text: 'Agree with ',
+                                          color: AppColors.black,
+                                          fontSize:
+                                              ParagraphTexts.normalParagraph,
+                                          fontWeight: FontWeight.normal,
                                         ),
-                                      ),
-                                    ],
+                                        ClickableText(
+                                          text: 'Terms & Conditions',
+                                          onTap: () {
+                                            // Show terms and conditions
+                                            _showTermsDialog();
+                                          },
+                                          color: Colors.black,
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
