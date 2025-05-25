@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/pages/home.dart'; // Add this import for Home page
+import 'package:thriftale/utils/pageNavigations.dart'; // Add this import for NavigationUtils
 
 class ProductDetails extends StatefulWidget {
   const ProductDetails({super.key});
@@ -30,7 +32,10 @@ class _ProductDetailsState extends State<ProductDetails> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Use NavigationUtils to go back to Home page
+            NavigationUtils.frontNavigation(context, Home());
+          },
         ),
         actions: [
           IconButton(
