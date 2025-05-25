@@ -44,7 +44,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     if (value == null || value.isEmpty) {
       return 'Please enter your name';
     }
-    if (value.length < 2) {
+    if (value.trim().length < 2) {
       return 'Name must be at least 2 characters';
     }
     return null;
@@ -56,7 +56,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       return 'Please enter your email';
     }
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (!emailRegex.hasMatch(value)) {
+    if (!emailRegex.hasMatch(value.trim())) {
       return 'Please enter a valid email address';
     }
     return null;
@@ -105,6 +105,27 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     );
   }
 
+  // Show success dialog
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to complete profile
+              NavigationUtils.frontNavigation(context, CompleteProfilePage());
+            },
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Handle create account
   Future<void> _handleCreateAccount() async {
     if (!_formKey.currentState!.validate()) {
@@ -121,18 +142,43 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     });
 
     try {
+      print('Starting account creation process...');
+
+      final name = _nameController.text.trim();
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+
+      print('Name: $name, Email: $email');
+
+      // Validate inputs before sending to Firebase
+      if (name.isEmpty || email.isEmpty || password.isEmpty) {
+        _showErrorDialog('Please fill in all fields');
+        return;
+      }
+
       final result = await _authService.createUserWithEmailAndPassword(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        name: name,
+        email: email,
+        password: password,
       );
 
-      if (result.success) {
-        // Navigate to complete profile
-        NavigationUtils.frontNavigation(context, CompleteProfilePage());
+      print('Account creation result: ${result.success}');
+
+      if (result.success && result.user != null) {
+        print('Account created successfully for: ${result.user!.email}');
+
+        // Show success message and navigate
+        _showSuccessDialog(
+            'Account created successfully! Welcome to Thriftale.');
       } else {
-        _showErrorDialog(result.error ?? 'Account creation failed');
+        final errorMessage =
+            result.error ?? 'Account creation failed for unknown reason';
+        print('Account creation failed: $errorMessage');
+        _showErrorDialog(errorMessage);
       }
+    } catch (e) {
+      print('Unexpected error during account creation: $e');
+      _showErrorDialog('An unexpected error occurred: $e');
     } finally {
       if (mounted) {
         setState(() {
