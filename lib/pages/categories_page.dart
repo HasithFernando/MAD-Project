@@ -93,7 +93,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         imageUrl:
             'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
         onTap: () {
-          NavigationUtils.frontNavigation(context, ProductDetails());
+          print('Item 1 tapped');
         },
       ),
       GridItemModel(

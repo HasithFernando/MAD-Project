@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:thriftale/pages/achievements.dart';
 import 'package:thriftale/pages/checkout.dart';
+import 'package:thriftale/pages/my_products_page.dart';
 import 'package:thriftale/services/profile_backend_service.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
@@ -317,13 +318,26 @@ class _ProfileState extends State<Profile> {
                       SizedBox(height: 30),
 
                       DashboardTile(
-                        title: 'My orders',
-                        subtitle: 'Already have 12 orders',
+                        title: 'My Products',
+                        subtitle:
+                            'View, edit, or add products', // Dynamic subtitle could show product count
                         onTap: () {
-                          print('My orders tile tapped');
+                          if (_currentUserId != null) {
+                            NavigationUtils.frontNavigation(
+                              context,
+                              MyProductsPage(currentUserId: _currentUserId!),
+                            );
+                          } else {
+                            // Handle case where user is not logged in or ID is not available
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Please log in to view your products.')),
+                            );
+                          }
                         },
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
                       DashboardTile(
                         title: 'My Achievements',
