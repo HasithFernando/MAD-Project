@@ -156,6 +156,11 @@ class _CheckoutState extends State<Checkout> {
       print('Checkout result: $result'); // Debug log
 
       if (result['success']) {
+        // Clear the cart after successful checkout
+        print('Clearing cart after successful checkout...'); // Debug log
+        await _cartService.clearCart(userId);
+        print('Cart cleared successfully'); // Debug log
+
         // Navigate to success page with order details
         NavigationUtils.frontNavigation(
             context,
