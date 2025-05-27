@@ -13,6 +13,7 @@ import 'package:thriftale/widgets/custom_text.dart';
 import 'package:thriftale/widgets/dashboard_tile.dart';
 import 'package:thriftale/widgets/newBottomBar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:thriftale/pages/wishlist.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -356,6 +357,17 @@ class _ProfileState extends State<Profile> {
                           NavigationUtils.frontNavigation(context, Checkout());
                         },
                       ),
+                      SizedBox(height: 30),
+                      DashboardTile(
+                          title: 'Wishlist',
+                          subtitle: 'Item',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const WishlistPage()),
+                            );
+                          }),
                       SizedBox(height: 30),
 
                       DashboardTile(

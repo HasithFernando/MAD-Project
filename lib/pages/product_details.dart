@@ -5,7 +5,9 @@ import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:thriftale/services/cart_service.dart'; // Make sure this import exists
+import 'package:thriftale/services/cart_service.dart';
+import 'package:thriftale/pages/wishlist.dart'; // Make sure this import exists
+import 'package:thriftale/services/wishlist_service.dart';
 
 class ProductDetails extends StatefulWidget {
   final Product product; // This page now requires a Product object
@@ -21,7 +23,8 @@ class _ProductDetailsState extends State<ProductDetails> {
   // int selectedSizeIndex = 0;
   // int selectedColorIndex = 0;
   int quantity = 1;
-  bool isFavorite =
+  bool isFavorite = false;
+  bool _isTogglingFavorite =
       false; // You'd typically manage favorites with a service/backend
 
   // Remove the full lists for selection
@@ -57,6 +60,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
     // You might also check if this product is already favorited by the current user
     // isFavorite = _checkIfFavorite(widget.product.id); // Requires auth & favorites logic
+    _checkIfInWishlist();
   }
 
   // Helper to format time ago from a Firestore Timestamp
@@ -68,6 +72,13 @@ class _ProductDetailsState extends State<ProductDetails> {
   // Helper to format price
   String _formatPrice(double price) {
     return 'Rs. ${price.toStringAsFixed(2)}';
+  }
+
+  void _checkIfInWishlist() async {
+    final exists = await WishlistService().isInWishlist(widget.product.id);
+    setState(() {
+      isFavorite = exists;
+    });
   }
 
   // Method to handle back navigation
@@ -109,12 +120,31 @@ class _ProductDetailsState extends State<ProductDetails> {
                 isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: isFavorite ? Colors.red : Colors.black,
               ),
-              onPressed: () {
-                setState(() {
-                  isFavorite = !isFavorite;
-                  // TODO: Implement logic to save/remove from user favorites in Firestore
-                });
-              },
+              onPressed: _isTogglingFavorite
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isTogglingFavorite = true;
+                      });
+
+                      try {
+                        final newFavoriteState = !isFavorite;
+                        await WishlistService().toggleWishlistItem(
+                            widget.product, newFavoriteState);
+                        setState(() {
+                          isFavorite = newFavoriteState;
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Failed to update wishlist: $e')),
+                        );
+                      } finally {
+                        setState(() {
+                          _isTogglingFavorite = false;
+                        });
+                      }
+                    },
             ),
             IconButton(
               icon: const Icon(Icons.share, color: Colors.black),
