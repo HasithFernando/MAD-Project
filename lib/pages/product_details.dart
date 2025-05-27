@@ -4,6 +4,8 @@ import 'package:thriftale/models/product_model.dart'; // Import your Product mod
 import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:thriftale/services/cart_service.dart'; // Make sure this import exists
 
 class ProductDetails extends StatefulWidget {
   final Product product; // This page now requires a Product object
@@ -645,11 +647,43 @@ class _ProductDetailsState extends State<ProductDetails> {
             children: [
               Expanded(
                 child: ElevatedButton(
+<<<<<<< Updated upstream
                   onPressed: () {
                     // TODO: Implement Add to Cart logic
                     print(
                         'Add to Cart: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
 
+=======
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+
+                    if (user == null) {
+                      // Optionally redirect to login
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Please log in to add items to cart.')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await CartService().addToCart(
+                        user.uid,
+                        product.id,
+                        quantity, // from your quantity selector
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Added to cart!')),
+                      );
+                    } catch (e) {
+                      print('Error adding to cart: $e');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to add to cart.')),
+                      );
+                    }
+>>>>>>> Stashed changes
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown.shade400,

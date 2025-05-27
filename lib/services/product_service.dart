@@ -169,4 +169,12 @@ class ProductService {
         .map((snapshot) =>
             snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList());
   }
+
+  Future<Product?> getProductById(String productId) async {
+    final doc = await _firestore.collection('products').doc(productId).get();
+    if (doc.exists) {
+      return Product.fromFirestore(doc);
+    }
+    return null;
+  }
 }
