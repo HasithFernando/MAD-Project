@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:thriftale/models/product_model.dart';
 import 'package:thriftale/services/product_service.dart';
-import 'package:thriftale/widgets/custom_product_tile.dart';
+import 'package:thriftale/widgets/my_product_tile.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
+import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/pages/product_adding_form.dart';
 import 'package:thriftale/pages/product_details.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:thriftale/pages/update_product_form.dart';
 
 class MyProductsPage extends StatefulWidget {
   final String currentUserId;
@@ -21,6 +23,8 @@ class MyProductsPage extends StatefulWidget {
 class _MyProductsPageState extends State<MyProductsPage> {
   final ProductService _productService = ProductService();
 
+  // These helper methods are no longer directly used here as MyProductTile handles them,
+  // but keeping them just in case you use them elsewhere or want to re-add.
   String _getTimeAgo(Timestamp timestamp) {
     final DateTime dateTime = timestamp.toDate();
     return timeago.format(dateTime);
@@ -28,6 +32,70 @@ class _MyProductsPageState extends State<MyProductsPage> {
 
   String _formatPrice(double price) {
     return 'Rs. ${price.toStringAsFixed(2)}';
+  }
+
+  // Method to handle back navigation
+  void _navigateBack() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      // If there's no previous page in the stack, navigate to Home
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+        (route) => false,
+      );
+    }
+  }
+
+  // Method to show delete confirmation dialog
+  Future<void> _showDeleteConfirmationDialog(Product product) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap a button to close the dialog
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Product'),
+          content: Text(
+              'Are you sure you want to delete "${product.name}"? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Dismiss dialog
+              },
+            ),
+            TextButton(
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                Navigator.of(dialogContext).pop(); // Dismiss dialog first
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Deleting product...')),
+                );
+
+                try {
+                  await _productService.deleteProduct(product.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Product deleted successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete product: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -39,9 +107,7 @@ class _MyProductsPageState extends State<MyProductsPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: _navigateBack,
         ),
         title: const Text(
           'My Products',
@@ -56,8 +122,11 @@ class _MyProductsPageState extends State<MyProductsPage> {
           IconButton(
             icon: const Icon(Icons.add_circle_outline, color: Colors.black),
             onPressed: () {
+              // Navigate to ProductAddingForm
               NavigationUtils.frontNavigation(
-                  context, const ProductAddingForm());
+                context,
+                const ProductAddingForm(),
+              );
             },
           ),
         ],
@@ -69,7 +138,8 @@ class _MyProductsPageState extends State<MyProductsPage> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            // A more user-friendly error message
+            // It's good practice to print the error in debug mode
+            debugPrint('Error loading products: ${snapshot.error}');
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -87,7 +157,6 @@ class _MyProductsPageState extends State<MyProductsPage> {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        // Optionally retry by rebuilding the stream or navigating back
                         setState(() {}); // Simple rebuild to try fetching again
                       },
                       child: const Text('Retry'),
@@ -127,31 +196,30 @@ class _MyProductsPageState extends State<MyProductsPage> {
           final products = snapshot.data!;
 
           return ListView.separated(
-            // Changed to ListView.separated for better spacing
             padding: const EdgeInsets.all(16.0),
             itemCount: products.length,
             separatorBuilder: (context, index) =>
                 const SizedBox(height: 16.0), // Adds space between items
             itemBuilder: (context, index) {
               final product = products[index];
-              return CustomProductTile(
-                title: product.name,
-                location: product.location,
-                timeAgo: _getTimeAgo(product.timestamp),
-                sustainabilityText:
-                    'CO2 Saved: ${product.co2Saved.toStringAsFixed(2)}kg', // Format CO2 saved
-                price: _formatPrice(product.price),
-                productImage: product.imageUrls.isNotEmpty
-                    ? product.imageUrls[0]
-                    : 'https://via.placeholder.com/108x108.png?text=No+Image', // More descriptive placeholder
-                iconImage:
-                    'assets/icons/dummy_product.png', // Ensure this asset exists or make it dynamic
+              return MyProductTile(
+                product: product, // Pass the entire product object to the tile
                 onTap: () {
+                  // Navigate to ProductDetails, passing the full product object
                   NavigationUtils.frontNavigation(
                       context, ProductDetails(product: product));
-                  // You might pass the product object or its ID to the detail page
-                  print(
-                      'Tapped on product: ${product.name}, ID: ${product.id}');
+                },
+                onEdit: () {
+                  NavigationUtils.frontNavigation(
+                    context,
+                    UpdateProductForm(
+                      product: product,
+                      currentUserId: widget.currentUserId,
+                    ),
+                  );
+                },
+                onDelete: () {
+                  _showDeleteConfirmationDialog(product);
                 },
               );
             },
