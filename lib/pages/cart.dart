@@ -25,6 +25,63 @@ class _CartState extends State<Cart> {
   final ProductService _productService = ProductService();
   final String userId = FirebaseAuth.instance.currentUser!.uid;
 
+  // Method to remove item from cart
+  Future<void> _removeFromCart(String cartItemId, String productName) async {
+    try {
+      await _cartService.removeFromCart(userId, cartItemId);
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$productName removed from cart'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to remove item from cart'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  // Show confirmation dialog before removing item
+  void _showRemoveConfirmation(String cartItemId, String productName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Remove Item'),
+          content: Text(
+              'Are you sure you want to remove "$productName" from your cart?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _removeFromCart(cartItemId, productName);
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Remove'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,22 +139,61 @@ class _CartState extends State<Cart> {
                               itemCount: productList.length,
                               itemBuilder: (context, index) {
                                 final product = productList[index];
+                                final cartItem = cartItems[index];
+
                                 if (product == null)
                                   return const SizedBox.shrink();
 
                                 return Column(
                                   children: [
-                                    CustomProductTile(
-                                      title: product.name,
-                                      location: product.location,
-                                      timeAgo: 'Just now',
-                                      sustainabilityText:
-                                          '🌱 Saves ${product.co2Saved.toStringAsFixed(1)}kg CO₂ & 1 landfill item',
-                                      price:
-                                          'Rs. ${product.price.toStringAsFixed(2)}',
-                                      productImage: product.imageUrls.first,
-                                      iconImage: 'assets/images/icon.png',
-                                      onTap: () {},
+                                    Stack(
+                                      children: [
+                                        CustomProductTile(
+                                          title: product.name,
+                                          location: product.location,
+                                          timeAgo: 'Just now',
+                                          sustainabilityText:
+                                              '🌱 Saves ${product.co2Saved.toStringAsFixed(1)}kg CO₂ & 1 landfill item',
+                                          price:
+                                              'Rs. ${product.price.toStringAsFixed(2)}',
+                                          productImage: product.imageUrls.first,
+                                          iconImage: 'assets/images/icon.png',
+                                          onTap: () {},
+                                        ),
+                                        // Remove button positioned at top-right
+                                        Positioned(
+                                          top: 8,
+                                          right: 8,
+                                          child: GestureDetector(
+                                            onTap: () =>
+                                                _showRemoveConfirmation(
+                                              cartItem['id'],
+                                              product.name,
+                                            ),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(6),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    Colors.red.withOpacity(0.9),
+                                                shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.2),
+                                                    blurRadius: 4,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: const Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                                size: 18,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: 20),
                                   ],
