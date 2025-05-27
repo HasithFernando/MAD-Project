@@ -4,6 +4,10 @@ import 'package:thriftale/models/product_model.dart'; // Import your Product mod
 import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
+import '../widgets/submit_review_form.dart';
+import '../widgets/reviews_section.dart';
+import '../widgets/average_rating_display.dart';
+
 
 class ProductDetails extends StatefulWidget {
   final Product product; // This page now requires a Product object
