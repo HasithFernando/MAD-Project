@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:thriftale/models/product_model.dart';
+import 'package:thriftale/models/payment_method_model.dart';
 import 'package:thriftale/pages/success.dart';
 import 'package:thriftale/pages/cart.dart';
+import 'package:thriftale/pages/payment_methods_page.dart';
 import 'package:thriftale/services/cart_service.dart';
 import 'package:thriftale/services/checkout_service.dart';
 import 'package:thriftale/services/product_service.dart';
+import 'package:thriftale/services/payment_service.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
@@ -24,26 +27,20 @@ class _CheckoutState extends State<Checkout> {
   final CheckoutService _checkoutService = CheckoutService();
   final CartService _cartService = CartService();
   final ProductService _productService = ProductService();
+  final PaymentService _paymentService = PaymentService();
   final String userId = FirebaseAuth.instance.currentUser!.uid;
 
   bool _isLoading = false;
   Map<String, dynamic>? _orderSummary;
   List<Map<String, dynamic>> _cartItems = [];
   List<Product?> _products = [];
+  PaymentMethod? _selectedPaymentMethod;
 
-  // Default address and payment method (in real app, these would be selected by user)
+  // Default address (in real app, this would be selected by user)
   final Map<String, dynamic> _defaultAddress = {
     'name': 'Jane Doe',
     'addressLine1': '3 Newbridge Court',
     'addressLine2': 'Chino Hills, CA 91709, United States',
-    'isDefault': true,
-  };
-
-  final Map<String, dynamic> _defaultPaymentMethod = {
-    'type': 'mastercard',
-    'lastFourDigits': '3947',
-    'expiryMonth': 12,
-    'expiryYear': 2025,
     'isDefault': true,
   };
 
@@ -73,6 +70,9 @@ class _CheckoutState extends State<Checkout> {
         // Calculate order summary
         _orderSummary = await _calculateOrderSummary();
       }
+
+      // Load default payment method
+      _selectedPaymentMethod = await _paymentService.getDefaultPaymentMethod();
     } catch (e) {
       _showErrorDialog('Failed to load checkout data: $e');
     } finally {
@@ -106,6 +106,11 @@ class _CheckoutState extends State<Checkout> {
   Future<void> _processCheckout() async {
     if (_orderSummary == null || _cartItems.isEmpty) {
       _showErrorDialog('Cart is empty or order summary not loaded');
+      return;
+    }
+
+    if (_selectedPaymentMethod == null) {
+      _showErrorDialog('Please select a payment method to continue');
       return;
     }
 
@@ -143,11 +148,20 @@ class _CheckoutState extends State<Checkout> {
 
       print('Order items prepared: ${orderItems.length} items'); // Debug log
 
+      // Prepare payment method data for checkout
+      final paymentMethodData = {
+        'type': _selectedPaymentMethod!.type,
+        'lastFourDigits': _selectedPaymentMethod!.lastFourDigits,
+        'expiryMonth': _selectedPaymentMethod!.expiryMonth,
+        'expiryYear': _selectedPaymentMethod!.expiryYear,
+        'isDefault': _selectedPaymentMethod!.isDefault,
+      };
+
       // Complete checkout process
       final result = await _checkoutService.completeCheckout(
         cartItems: orderItems,
         shippingAddress: _defaultAddress,
-        paymentMethod: _defaultPaymentMethod,
+        paymentMethod: paymentMethodData,
         totalAmount: _orderSummary!['total'],
         totalCO2Saved: _orderSummary!['co2Saved'],
         itemsRescued: _orderSummary!['itemsRescued'],
@@ -252,20 +266,88 @@ class _CheckoutState extends State<Checkout> {
     );
   }
 
-  void _showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Text('Processing your order...'),
-          ],
-        ),
-      ),
-    );
+  Widget _buildCardTypeIcon(String cardType) {
+    switch (cardType.toLowerCase()) {
+      case 'mastercard':
+        return Container(
+          width: 40,
+          height: 25,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEB001B),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 12,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF79E1B),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      case 'visa':
+        return Container(
+          width: 40,
+          height: 25,
+          decoration: BoxDecoration(
+            color: Colors.blue[700],
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          child: Center(
+            child: Text(
+              'VISA',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      case 'amex':
+      case 'american express':
+        return Container(
+          width: 40,
+          height: 25,
+          decoration: BoxDecoration(
+            color: Colors.blue[900],
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          child: Center(
+            child: Text(
+              'AMEX',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      default:
+        return Icon(
+          Icons.credit_card,
+          color: Colors.grey[600],
+          size: 24,
+        );
+    }
   }
 
   @override
@@ -401,7 +483,7 @@ class _CheckoutState extends State<Checkout> {
 
                                 const SizedBox(height: 20),
 
-                                // Payment Section
+                                // Payment Section - UPDATED
                                 CustomText(
                                   text: 'Payment',
                                   color: AppColors.black,
@@ -439,9 +521,25 @@ class _CheckoutState extends State<Checkout> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                           GestureDetector(
-                                            onTap: () {
-                                              print(
-                                                  'Change payment method tapped');
+                                            onTap: () async {
+                                              final result =
+                                                  await Navigator.of(context)
+                                                      .push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const PaymentMethodsPage(),
+                                                ),
+                                              );
+                                              if (result == true) {
+                                                // Reload payment method after changes
+                                                final updatedPaymentMethod =
+                                                    await _paymentService
+                                                        .getDefaultPaymentMethod();
+                                                setState(() {
+                                                  _selectedPaymentMethod =
+                                                      updatedPaymentMethod;
+                                                });
+                                              }
                                             },
                                             child: CustomText(
                                               text: 'Change',
@@ -454,56 +552,70 @@ class _CheckoutState extends State<Checkout> {
                                         ],
                                       ),
                                       const SizedBox(height: 16.0),
-                                      Row(
-                                        children: [
-                                          // Mastercard logo container
-                                          Container(
-                                            width: 40,
-                                            height: 25,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(4.0),
-                                            ),
-                                            child: Stack(
+                                      // Payment Method Display - Always show default card or placeholder
+                                      if (_selectedPaymentMethod != null) ...[
+                                        Row(
+                                          children: [
+                                            // Card type icon
+                                            _buildCardTypeIcon(
+                                                _selectedPaymentMethod!.type),
+                                            const SizedBox(width: 12.0),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                Positioned(
-                                                  left: 0,
-                                                  child: Container(
-                                                    width: 20,
-                                                    height: 20,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                      color: Color(0xFFEB001B),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  ),
+                                                CustomText(
+                                                  text: _selectedPaymentMethod!
+                                                      .maskedCardNumber,
+                                                  color: AppColors.black,
+                                                  fontSize: ParagraphTexts
+                                                      .textFieldLable,
+                                                  fontWeight: FontWeight.w500,
                                                 ),
-                                                Positioned(
-                                                  left: 12,
-                                                  child: Container(
-                                                    width: 20,
-                                                    height: 20,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                      color: Color(0xFFF79E1B),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  ),
+                                                const SizedBox(height: 2),
+                                                CustomText(
+                                                  text: _selectedPaymentMethod!
+                                                      .cardHolderName,
+                                                  color: Colors.grey[600]!,
+                                                  fontSize: ParagraphTexts
+                                                      .normalParagraph,
+                                                  fontWeight: FontWeight.w400,
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                          const SizedBox(width: 12.0),
-                                          CustomText(
-                                            text:
-                                                '**** **** **** ${_defaultPaymentMethod['lastFourDigits']}',
-                                            color: AppColors.black,
-                                            fontSize:
-                                                ParagraphTexts.textFieldLable,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
+                                      ] else ...[
+                                        // Show a default card placeholder when no payment method is available
+                                        Row(
+                                          children: [
+                                            _buildCardTypeIcon(
+                                                'visa'), // Default card icon
+                                            const SizedBox(width: 12.0),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                CustomText(
+                                                  text: '**** **** **** 1234',
+                                                  color: AppColors.black,
+                                                  fontSize: ParagraphTexts
+                                                      .textFieldLable,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                CustomText(
+                                                  text: 'Default Card',
+                                                  color: Colors.grey[600]!,
+                                                  fontSize: ParagraphTexts
+                                                      .normalParagraph,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),
