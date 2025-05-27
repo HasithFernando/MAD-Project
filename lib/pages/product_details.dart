@@ -68,250 +68,268 @@ class _ProductDetailsState extends State<ProductDetails> {
     return 'Rs. ${price.toStringAsFixed(2)}';
   }
 
+  // Method to handle back navigation
+  void _navigateBack() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      // If there's no previous page in the stack, navigate to Home
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Access the product data using widget.product
     final Product product = widget.product;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        _navigateBack();
+        return false; // Prevent default back behavior
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // Go back to the previous page
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? Colors.red : Colors.black,
-            ),
-            onPressed: () {
-              setState(() {
-                isFavorite = !isFavorite;
-                // TODO: Implement logic to save/remove from user favorites in Firestore
-              });
-            },
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: _navigateBack, // Use the custom navigation method
           ),
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.black),
-            onPressed: () {
-              // TODO: Implement sharing functionality (e.g., Share.share package)
-              print('Share product');
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image
-            Container(
-              height: 300,
-              width: double.infinity,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.grey.shade100,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : Colors.black,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: product.imageUrls.isNotEmpty
-                    ? Image.network(
-                        product.imageUrls[0], // Display the first image
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child; // Image is fully loaded, show the image
-                          }
-                          // Calculate progress value
-                          double? progressValue;
-                          if (loadingProgress.expectedTotalBytes != null) {
-                            progressValue =
-                                loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!;
-                          }
+              onPressed: () {
+                setState(() {
+                  isFavorite = !isFavorite;
+                  // TODO: Implement logic to save/remove from user favorites in Firestore
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.share, color: Colors.black),
+              onPressed: () {
+                // TODO: Implement sharing functionality (e.g., Share.share package)
+                print('Share product');
+              },
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image
+              Container(
+                height: 300,
+                width: double.infinity,
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey.shade100,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: product.imageUrls.isNotEmpty
+                      ? Image.network(
+                          product.imageUrls[0], // Display the first image
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child; // Image is fully loaded, show the image
+                            }
+                            // Calculate progress value
+                            double? progressValue;
+                            if (loadingProgress.expectedTotalBytes != null) {
+                              progressValue =
+                                  loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!;
+                            }
 
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value:
-                                  progressValue, // Use the calculated progress value (can be null)
-                              color: Colors.brown.shade400,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                              child: Icon(
-                                Icons.image,
-                                size: 80,
-                                color: Colors.grey,
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    progressValue, // Use the calculated progress value (can be null)
+                                color: Colors.brown.shade400,
                               ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.image,
+                                  size: 80,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: Colors.grey.shade200,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              size: 80,
+                              color: Colors.grey,
                             ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey.shade200,
-                        child: const Center(
-                          child: Icon(
-                            Icons.image,
-                            size: 80,
+                          ),
+                        ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Seller Name and CO2 savings
+                    Row(
+                      children: [
+                        Text(
+                          product.sellerName, // Dynamic Seller Name
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                             color: Colors.grey,
                           ),
                         ),
-                      ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Seller Name and CO2 savings
-                  Row(
-                    children: [
-                      Text(
-                        product.sellerName, // Dynamic Seller Name
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2', // Dynamic CO2 Saved
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Product title
-                  Text(
-                    product.name, // Dynamic Product Name
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Location and time
-                  Text(
-                    '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Price
-                  Text(
-                    _formatPrice(product.price), // Dynamic Price
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Size selection
-                  const Text(
-                    'Size',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: availableSizes.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      String size = entry.value;
-                      bool isSelected = selectedSizeIndex == index;
-
-                      return GestureDetector(
-                        onTap: () {
-                          // Only allow selection if the product's actual size matches this option,
-                          // or if you want to allow users to select from available sizes.
-                          // For a thrift shop, typically a product has one specific size.
-                          // If you want to only highlight the product's actual size:
-                          // if (size == product.size) { // Only highlight the actual size
-                          //   setState(() { selectedSizeIndex = index; });
-                          // }
-
-                          // If you want to let the user "select" available sizes (even if the product has only one):
-                          setState(() {
-                            selectedSizeIndex = index;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 12),
+                        const Spacer(),
+                        Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                            horizontal: 8,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.brown.shade400
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.brown.shade400
-                                  : Colors.grey.shade300,
-                            ),
+                            color: Colors.green.shade100,
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            size,
+                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2', // Dynamic CO2 Saved
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              fontSize: 12,
+                              color: Colors.green.shade700,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 8),
 
-                  // Color selection
-                  const Text(
-                    'Color',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    // Product title
+                    Text(
+                      product.name, // Dynamic Product Name
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Location and time
+                    Text(
+                      '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Price
+                    Text(
+                      _formatPrice(product.price), // Dynamic Price
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Size selection
+                    const Text(
+                      'Size',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: availableSizes.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        String size = entry.value;
+                        bool isSelected = selectedSizeIndex == index;
+
+                        return GestureDetector(
+                          onTap: () {
+                            // Only allow selection if the product's actual size matches this option,
+                            // or if you want to allow users to select from available sizes.
+                            // For a thrift shop, typically a product has one specific size.
+                            // If you want to only highlight the product's actual size:
+                            // if (size == product.size) { // Only highlight the actual size
+                            //   setState(() { selectedSizeIndex = index; });
+                            // }
+
+                            // If you want to let the user "select" available sizes (even if the product has only one):
+                            setState(() {
+                              selectedSizeIndex = index;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.brown.shade400
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.brown.shade400
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Text(
+                              size,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Color selection
+                    const Text(
+                      'Color',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -329,7 +347,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                           //   setState(() { selectedColorIndex = index; });
                           // }
 
-<<<<<<< Updated upstream
                           // If you want to let the user "select" available colors:
                           setState(() {
                             selectedColorIndex = index;
@@ -347,55 +364,82 @@ class _ProductDetailsState extends State<ProductDetails> {
                               width: 2,
                             ),
                           ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: availableColors.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        Color color = entry.value;
+                        bool isSelected = selectedColorIndex == index;
+
+                        return GestureDetector(
+                          onTap: () {
+                            // Similar to size, for a thrift shop, a product has one specific color.
+                            // If you want to only highlight the product's actual color:
+                            // if (color.value == product.color.value) { // Only highlight the actual color
+                            //   setState(() { selectedColorIndex = index; });
+                            // }
+
+                            // If you want to let the user "select" available colors:
+                            setState(() {
+                              selectedColorIndex = index;
+                            });
+                          },
                           child: Container(
-                            width: 32,
-                            height: 32,
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
-                              color: color,
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.brown.shade400
+                                    : Colors.grey.shade300,
+                                width: 2,
+                              ),
+                            ),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                        );
+                      }).toList(),
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
-                  Row(
-                    children: [
-                      const Text(
-                        'Quantity',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                    // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
+                    Row(
+                      children: [
+                        const Text(
+                          'Quantity',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: quantity > 1
-                                  ? () {
-                                      setState(() {
-                                        quantity--;
-                                      });
-                                    }
-                                  : null,
-                              icon: const Icon(Icons.remove),
-                              color: quantity > 1 ? Colors.black : Colors.grey,
-                            ),
-                            Text(
-                              quantity.toString(),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
+                        const Spacer(),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: quantity > 1
+                                    ? () {
+                                        setState(() {
+                                          quantity--;
+                                        });
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.remove),
+                                color:
+                                    quantity > 1 ? Colors.black : Colors.grey,
                               ),
                             ),
                             IconButton(
@@ -408,7 +452,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                               color: Colors.black,
                             ),
                           ],
-=======
                     // Product title
                     Text(
                       product.name, // Dynamic Product Name
@@ -506,39 +549,55 @@ class _ProductDetailsState extends State<ProductDetails> {
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
->>>>>>> Stashed changes
+                              Text(
+                                quantity.toString(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    quantity++;
+                                  });
+                                },
+                                icon: const Icon(Icons.add),
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
                         ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Description
+                    const Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Description
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    product.description, // Dynamic Description
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                      height: 1.5,
+                    const SizedBox(height: 8),
+                    Text(
+                      product.description, // Dynamic Description
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
+                        height: 1.5,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 32),
-                ],
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
           ],
         ),
-<<<<<<< Updated upstream
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
@@ -567,7 +626,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-=======
+            ],
+          ),
+        ),
         bottomNavigationBar: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -588,6 +649,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                     // TODO: Implement Add to Cart logic
                     print(
                         'Add to Cart: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown.shade400,
@@ -596,18 +658,16 @@ class _ProductDetailsState extends State<ProductDetails> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
->>>>>>> Stashed changes
                   ),
-                ),
-                child: const Text(
-                  'Add to Cart',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  child: const Text(
+                    'Add to Cart',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-<<<<<<< Updated upstream
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -623,7 +683,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-=======
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
@@ -639,19 +698,18 @@ class _ProductDetailsState extends State<ProductDetails> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
->>>>>>> Stashed changes
                   ),
-                ),
-                child: const Text(
-                  'Buy Now',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  child: const Text(
+                    'Buy Now',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
