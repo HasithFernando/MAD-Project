@@ -15,6 +15,7 @@ import 'package:thriftale/widgets/slider_widget.dart';
 import 'package:thriftale/services/product_service.dart'; // Import your ProductService
 import 'package:thriftale/models/product_model.dart'; // Import your Product model
 import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
+import 'package:thriftale/pages/search_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -150,8 +151,7 @@ class _HomeState extends State<Home> {
               placeholder: "Search for products",
               notificationCount: 3,
               onSearchTap: () {
-                print('Search tapped');
-                // Implement search functionality here
+                NavigationUtils.frontNavigation(context, const SearchPage());
               },
               onNotificationTap: () {
                 print('Notification tapped');
