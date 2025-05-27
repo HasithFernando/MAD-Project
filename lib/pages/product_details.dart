@@ -4,9 +4,6 @@ import 'package:thriftale/models/product_model.dart'; // Import your Product mod
 import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
-import '../widgets/submit_review_form.dart';
-import '../widgets/reviews_section.dart';
-import '../widgets/average_rating_display.dart';
 
 class ProductDetails extends StatefulWidget {
   final Product product; // This page now requires a Product object
@@ -18,64 +15,65 @@ class ProductDetails extends StatefulWidget {
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
-  int selectedSizeIndex = 0;
-  int selectedColorIndex = 0;
+  // These are no longer needed as we are directly displaying product's size and color
+  // int selectedSizeIndex = 0;
+  // int selectedColorIndex = 0;
   int quantity = 1;
-  bool isFavorite = false;
+  bool isFavorite =
+      false; // You'd typically manage favorites with a service/backend
 
-  final List<String> availableSizes = [
-    'XS',
-    'S',
-    'M',
-    'L',
-    'XL',
-    'XXL',
-    'Free Size'
-  ];
-  final List<Color> availableColors = [
-    Colors.red,
-    Colors.blue.shade800,
-    Colors.green,
-    Colors.black,
-    Colors.white,
-    Colors.brown.shade400,
-    Colors.purple,
-    Colors.orange,
-    Colors.pink,
-    Colors.yellow,
-    Colors.teal,
-    Colors.grey,
-  ];
+  // Remove the full lists for selection
+  // final List<String> availableSizes = [
+  //   'XS',
+  //   'S',
+  //   'M',
+  //   'L',
+  //   'XL',
+  //   'XXL',
+  //   'Free Size'
+  // ];
+  // final List<Color> availableColors = [
+  //   Colors.red,
+  //   Colors.blue.shade800,
+  //   Colors.green,
+  //   Colors.black,
+  //   Colors.white,
+  //   Colors.brown.shade400,
+  //   Colors.purple,
+  //   Colors.orange,
+  //   Colors.pink,
+  //   Colors.yellow,
+  //   Colors.teal,
+  //   Colors.grey,
+  // ];
 
   @override
   void initState() {
     super.initState();
-    selectedSizeIndex = availableSizes.indexOf(widget.product.size);
-    if (selectedSizeIndex == -1) {
-      selectedSizeIndex = 0;
-    }
+    // No need to initialize selectedSizeIndex or selectedColorIndex from available lists
+    // as we're directly using widget.product.size and widget.product.color.
 
-    selectedColorIndex = availableColors.indexWhere(
-      (color) => color.value == widget.product.color.value,
-    );
-    if (selectedColorIndex == -1) {
-      selectedColorIndex = 0;
-    }
+    // You might also check if this product is already favorited by the current user
+    // isFavorite = _checkIfFavorite(widget.product.id); // Requires auth & favorites logic
   }
 
+  // Helper to format time ago from a Firestore Timestamp
   String _getTimeAgo(Timestamp timestamp) {
     final DateTime dateTime = timestamp.toDate();
     return timeago.format(dateTime);
   }
 
+  // Helper to format price
   String _formatPrice(double price) {
     return 'Rs. ${price.toStringAsFixed(2)}';
   }
 
+  // Method to handle back navigation
   void _navigateBack() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     } else {
+      // If there's no previous page in the stack, navigate to Home
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const Home()),
@@ -84,24 +82,15 @@ class _ProductDetailsState extends State<ProductDetails> {
     }
   }
 
-  void _onAddToCart() {
-    print(
-        'Add to Cart: ${widget.product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
-  }
-
-  void _onBuyNow() {
-    print(
-        'Buy Now: ${widget.product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Access the product data using widget.product
     final Product product = widget.product;
 
     return WillPopScope(
       onWillPop: () async {
         _navigateBack();
-        return false;
+        return false; // Prevent default back behavior
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -110,7 +99,7 @@ class _ProductDetailsState extends State<ProductDetails> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: _navigateBack,
+            onPressed: _navigateBack, // Use the custom navigation method
           ),
           actions: [
             IconButton(
@@ -121,12 +110,14 @@ class _ProductDetailsState extends State<ProductDetails> {
               onPressed: () {
                 setState(() {
                   isFavorite = !isFavorite;
+                  // TODO: Implement logic to save/remove from user favorites in Firestore
                 });
               },
             ),
             IconButton(
               icon: const Icon(Icons.share, color: Colors.black),
               onPressed: () {
+                // TODO: Implement sharing functionality (e.g., Share.share package)
                 print('Share product');
               },
             ),
@@ -136,6 +127,7 @@ class _ProductDetailsState extends State<ProductDetails> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Product Image
               Container(
                 height: 300,
                 width: double.infinity,
@@ -148,18 +140,24 @@ class _ProductDetailsState extends State<ProductDetails> {
                   borderRadius: BorderRadius.circular(12),
                   child: product.imageUrls.isNotEmpty
                       ? Image.network(
-                          product.imageUrls[0],
+                          product.imageUrls[0], // Display the first image
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
+                            if (loadingProgress == null) {
+                              return child; // Image is fully loaded, show the image
+                            }
+                            // Calculate progress value
                             double? progressValue;
                             if (loadingProgress.expectedTotalBytes != null) {
-                              progressValue = loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!;
+                              progressValue =
+                                  loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!;
                             }
+
                             return Center(
                               child: CircularProgressIndicator(
-                                value: progressValue,
+                                value:
+                                    progressValue, // Use the calculated progress value (can be null)
                                 color: Colors.brown.shade400,
                               ),
                             );
@@ -168,7 +166,11 @@ class _ProductDetailsState extends State<ProductDetails> {
                             return Container(
                               color: Colors.grey.shade200,
                               child: const Center(
-                                child: Icon(Icons.image, size: 80, color: Colors.grey),
+                                child: Icon(
+                                  Icons.image,
+                                  size: 80,
+                                  color: Colors.grey,
+                                ),
                               ),
                             );
                           },
@@ -176,20 +178,26 @@ class _ProductDetailsState extends State<ProductDetails> {
                       : Container(
                           color: Colors.grey.shade200,
                           child: const Center(
-                            child: Icon(Icons.image, size: 80, color: Colors.grey),
+                            child: Icon(
+                              Icons.image,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                 ),
               ),
+
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Seller Name and CO2 savings
                     Row(
                       children: [
                         Text(
-                          product.sellerName,
+                          product.sellerName, // Dynamic Seller Name
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -198,13 +206,16 @@ class _ProductDetailsState extends State<ProductDetails> {
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green.shade100,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2',
+                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2', // Dynamic CO2 Saved
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.green.shade700,
@@ -214,54 +225,169 @@ class _ProductDetailsState extends State<ProductDetails> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 8),
+
+                    // Product title
                     Text(
-                      product.name,
+                      product.name, // Dynamic Product Name
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     const SizedBox(height: 4),
+
+                    // Location and time
                     Text(
-                      '${product.location} • ${_getTimeAgo(product.timestamp)}',
+                      '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    AverageRatingDisplay(productId: product.id),
+
                     const SizedBox(height: 16),
+
+                    // Price
                     Text(
-                      _formatPrice(product.price),
+                      _formatPrice(product.price), // Dynamic Price
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      product.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
-                        height: 1.5,
-                      ),
-                    ),
+
                     const SizedBox(height: 24),
-                    SubmitReviewForm(productId: product.id),
-                    const SizedBox(height: 24),
+
+                    // Display Current Size
                     const Text(
-                      'User Reviews',
+                      'Size',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ReviewsSection(productId: product.id),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.brown.shade400,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        product.size, // Display the product's actual size
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Display Current Color
+                    const Text(
+                      'Color',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:
+                            product.color, // Display the product's actual color
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
+                    Row(
+                      children: [
+                        const Text(
+                          'Quantity',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: quantity > 1
+                                    ? () {
+                                        setState(() {
+                                          quantity--;
+                                        });
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.remove),
+                                color:
+                                    quantity > 1 ? Colors.black : Colors.grey,
+                              ),
+                              Text(
+                                quantity.toString(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    quantity++;
+                                  });
+                                },
+                                icon: const Icon(Icons.add),
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Description
+                    const Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      product.description, // Dynamic Description
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
+                        height: 1.5,
+                      ),
+                    ),
+
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -285,7 +411,11 @@ class _ProductDetailsState extends State<ProductDetails> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: _onAddToCart,
+                  onPressed: () {
+                    // TODO: Implement Add to Cart logic
+                    print(
+                        'Add to Cart: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown.shade400,
                     foregroundColor: Colors.white,
@@ -306,7 +436,11 @@ class _ProductDetailsState extends State<ProductDetails> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _onBuyNow,
+                  onPressed: () {
+                    // TODO: Implement Buy Now logic (e.g., direct checkout)
+                    print(
+                        'Buy Now: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.brown.shade400,
                     side: BorderSide(color: Colors.brown.shade400),
