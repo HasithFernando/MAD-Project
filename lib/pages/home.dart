@@ -10,7 +10,6 @@ import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
 import 'package:thriftale/widgets/grid_item_model.dart';
 import 'package:thriftale/widgets/newBottomBar.dart';
-import 'package:thriftale/widgets/product_card.dart'; // This is ProductCard, not CustomProductTile
 import 'package:thriftale/widgets/reusable_category_widget.dart';
 import 'package:thriftale/widgets/slider_widget.dart';
 import 'package:thriftale/services/product_service.dart'; // Import your ProductService

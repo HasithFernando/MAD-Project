@@ -15,56 +15,43 @@ class ProductDetails extends StatefulWidget {
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
-  // Use product properties to initialize these
-  int selectedSizeIndex = 0; // Index of the selected size
-  int selectedColorIndex = 0; // Index of the selected color
+  // These are no longer needed as we are directly displaying product's size and color
+  // int selectedSizeIndex = 0;
+  // int selectedColorIndex = 0;
   int quantity = 1;
   bool isFavorite =
       false; // You'd typically manage favorites with a service/backend
 
-  // Define full lists for selection
-  final List<String> availableSizes = [
-    'XS',
-    'S',
-    'M',
-    'L',
-    'XL',
-    'XXL',
-    'Free Size'
-  ];
-  final List<Color> availableColors = [
-    Colors.red,
-    Colors.blue.shade800,
-    Colors.green,
-    Colors.black,
-    Colors.white,
-    Colors.brown.shade400,
-    Colors.purple,
-    Colors.orange,
-    Colors.pink,
-    Colors.yellow,
-    Colors.teal,
-    Colors.grey,
-  ];
+  // Remove the full lists for selection
+  // final List<String> availableSizes = [
+  //   'XS',
+  //   'S',
+  //   'M',
+  //   'L',
+  //   'XL',
+  //   'XXL',
+  //   'Free Size'
+  // ];
+  // final List<Color> availableColors = [
+  //   Colors.red,
+  //   Colors.blue.shade800,
+  //   Colors.green,
+  //   Colors.black,
+  //   Colors.white,
+  //   Colors.brown.shade400,
+  //   Colors.purple,
+  //   Colors.orange,
+  //   Colors.pink,
+  //   Colors.yellow,
+  //   Colors.teal,
+  //   Colors.grey,
+  // ];
 
   @override
   void initState() {
     super.initState();
-    // Initialize selected size and color based on the product data
-    // Find the index of the product's size in the availableSizes list
-    selectedSizeIndex = availableSizes.indexOf(widget.product.size);
-    if (selectedSizeIndex == -1) {
-      selectedSizeIndex = 0; // Default to first size if not found
-    }
-
-    // Find the index of the product's color in the availableColors list
-    // Compare color values since direct Color object comparison might not work as expected
-    selectedColorIndex = availableColors.indexWhere(
-      (color) => color.value == widget.product.color.value,
-    );
-    if (selectedColorIndex == -1) {
-      selectedColorIndex = 0; // Default to first color if not found
-    }
+    // No need to initialize selectedSizeIndex or selectedColorIndex from available lists
+    // as we're directly using widget.product.size and widget.product.color.
 
     // You might also check if this product is already favorited by the current user
     // isFavorite = _checkIfFavorite(widget.product.id); // Requires auth & favorites logic
@@ -342,6 +329,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                           //   setState(() { selectedColorIndex = index; });
                           // }
 
+<<<<<<< Updated upstream
                           // If you want to let the user "select" available colors:
                           setState(() {
                             selectedColorIndex = index;
@@ -420,6 +408,105 @@ class _ProductDetailsState extends State<ProductDetails> {
                               color: Colors.black,
                             ),
                           ],
+=======
+                    // Product title
+                    Text(
+                      product.name, // Dynamic Product Name
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Location and time
+                    Text(
+                      '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Price
+                    Text(
+                      _formatPrice(product.price), // Dynamic Price
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Display Current Size
+                    const Text(
+                      'Size',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.brown.shade400,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        product.size, // Display the product's actual size
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Display Current Color
+                    const Text(
+                      'Color',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:
+                            product.color, // Display the product's actual color
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
+                    Row(
+                      children: [
+                        const Text(
+                          'Quantity',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+>>>>>>> Stashed changes
                         ),
                       ),
                     ],
@@ -451,6 +538,7 @@ class _ProductDetailsState extends State<ProductDetails> {
             ),
           ],
         ),
+<<<<<<< Updated upstream
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
@@ -479,6 +567,36 @@ class _ProductDetailsState extends State<ProductDetails> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+=======
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement Add to Cart logic
+                    print(
+                        'Add to Cart: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown.shade400,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+>>>>>>> Stashed changes
                   ),
                 ),
                 child: const Text(
@@ -489,6 +607,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                 ),
               ),
+<<<<<<< Updated upstream
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -504,6 +623,23 @@ class _ProductDetailsState extends State<ProductDetails> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+=======
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    // TODO: Implement Buy Now logic (e.g., direct checkout)
+                    print(
+                        'Buy Now: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.brown.shade400,
+                    side: BorderSide(color: Colors.brown.shade400),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+>>>>>>> Stashed changes
                   ),
                 ),
                 child: const Text(
