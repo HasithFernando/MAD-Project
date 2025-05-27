@@ -92,9 +92,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         carbonSave: 'Saves 0.2kg CO2',
         imageUrl:
             'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          NavigationUtils.frontNavigation(context, ProductDetails());
-        },
+        onTap: () {},
       ),
       GridItemModel(
         title: 'Fresh Vegetables',

@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:thriftale/pages/dashboard.dart';
 import 'package:thriftale/pages/splash_screen.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'package:thriftale/services/wishlist_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +17,12 @@ void main() async {
   );
 
   runApp(
-    DevicePreview(
-      enabled: !kReleaseMode, // Disable on release mode
-      builder: (context) => const MyApp(), // Wrap your app
+    ChangeNotifierProvider(
+      create: (_) => WishlistService(),
+      child: DevicePreview(
+        enabled: !kReleaseMode,
+        builder: (context) => const MyApp(),
+      ),
     ),
   );
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import for Timestamp
 import 'package:thriftale/pages/categories_page.dart';
+import 'package:thriftale/pages/product_details.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
@@ -8,9 +10,11 @@ import 'package:thriftale/widgets/Search_Notification_Widget.dart';
 import 'package:thriftale/widgets/custom_text.dart';
 import 'package:thriftale/widgets/grid_item_model.dart';
 import 'package:thriftale/widgets/newBottomBar.dart';
-import 'package:thriftale/widgets/product_card.dart';
 import 'package:thriftale/widgets/reusable_category_widget.dart';
 import 'package:thriftale/widgets/slider_widget.dart';
+import 'package:thriftale/services/product_service.dart'; // Import your ProductService
+import 'package:thriftale/models/product_model.dart'; // Import your Product model
+import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,9 +24,45 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final ProductService _productService =
+      ProductService(); // Initialize ProductService
+
+  // Helper to format time ago from a Firestore Timestamp
+  String _getTimeAgo(Timestamp timestamp) {
+    final DateTime dateTime = timestamp.toDate();
+    return timeago.format(dateTime);
+  }
+
+  // Helper to format price
+  String _formatPrice(double price) {
+    return 'Rs. ${price.toStringAsFixed(2)}';
+  }
+
+  // Helper to convert Product model to GridItemModel
+  GridItemModel _productToGridItemModel(Product product) {
+    return GridItemModel(
+      title: product.name,
+      location: product.location,
+      timeAgo: _getTimeAgo(product.timestamp),
+      price: _formatPrice(product.price),
+      carbonSave:
+          'CO2 Saved: ${product.co2Saved.toStringAsFixed(2)}kg', // Use calculated CO2
+      imageUrl: product.imageUrls.isNotEmpty
+          ? product.imageUrls[0]
+          : 'https://via.placeholder.com/150x150.png?text=No+Image', // Placeholder
+      onTap: () {
+        // Navigate to product detail page, passing the actual product object
+        NavigationUtils.frontNavigation(
+            context, ProductDetails(product: product)); // <--- UPDATED
+        print('Tapped on product: ${product.name}');
+        // You might pass the product.id or product object to the detail page
+        print('Tapped on product: ${product.name}');
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Create the slides list directly when it's used
     final List<SlideModel> slides = [
       SlideModel(
         text: 'EARN BADGES AND REWARDS FOR REDUCING WASTE!',
@@ -44,139 +84,52 @@ class _HomeState extends State<Home> {
       ),
     ];
 
+    // Static categories list (you might want to make this dynamic too later)
     final List<CategoryItem> categories = [
       CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Shirt',
+        image: 'assets/images/shirt.png', // Ensure asset exists
+        text: 'Tops',
         onTap: () {
-          print('Shirt category tapped');
-          // Add your navigation or other logic here
+          print('Tops category tapped');
+          // Navigate to a filtered product list for 'Tops'
         },
       ),
       CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
+        image: 'assets/images/pants.png', // Example, ensure asset exists
+        text: 'Bottoms',
         onTap: () {
-          print('Pants category tapped');
+          print('Bottoms category tapped');
         },
       ),
       CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
+        image: 'assets/images/dress.png', // Example, ensure asset exists
+        text: 'Dresses',
         onTap: () {
-          print('Pants category tapped');
+          print('Dresses category tapped');
         },
       ),
       CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
+        image: 'assets/images/jacket.png', // Example, ensure asset exists
+        text: 'Outerwear',
         onTap: () {
-          print('Pants category tapped');
+          print('Outerwear category tapped');
         },
       ),
       CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
+        image: 'assets/images/shoes.png', // Example, ensure asset exists
+        text: 'Footwear',
         onTap: () {
-          print('Pants category tapped');
+          print('Footwear category tapped');
         },
       ),
       CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
+        image: 'assets/images/hat.png', // Example, ensure asset exists
+        text: 'Accessories',
         onTap: () {
-          print('Pants category tapped');
+          print('Accessories category tapped');
         },
       ),
-      CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
-        onTap: () {
-          print('Pants category tapped');
-        },
-      ),
-      CategoryItem(
-        image: 'assets/images/shirt.png',
-        text: 'Pants',
-        onTap: () {
-          print('Pants category tapped');
-        },
-      ),
-    ];
-
-    List<GridItemModel> sampleItems = [
-      GridItemModel(
-        title: 'Latest Products',
-        location: 'Colombo',
-        timeAgo: '2 days ago',
-        price: 'Rs. 1000.00',
-        carbonSave: 'Saves 0.2kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          NavigationUtils.frontNavigation(context, CategoriesPage());
-        },
-      ),
-      GridItemModel(
-        title: 'Fresh Vegetables',
-        location: 'Galle',
-        timeAgo: '1 day ago',
-        price: 'Rs. 750.00',
-        carbonSave: 'Saves 0.3kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 2 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
+      // Add more categories as needed, ensuring you have corresponding assets
     ];
 
     return Scaffold(
@@ -187,32 +140,28 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.white,
         title: Image.asset(
           'assets/images/Thriftale.png',
-          height: 40, // Adjust height as needed
+          height: 40,
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Search and notification widget - keep this outside the scrollable area
             SearchNotificationWidget(
               placeholder: "Search for products",
-              notificationCount: 3, // Set your notification count here
+              notificationCount: 3,
               onSearchTap: () {
-                // Navigate to search screen or show search dialog
                 print('Search tapped');
+                // Implement search functionality here
               },
               onNotificationTap: () {
-                // Navigate to notifications screen
                 print('Notification tapped');
+                // Implement notification navigation here
               },
             ),
-
-            // Make the rest of the content scrollable
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Auto slider
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: AutoSlider(
@@ -221,8 +170,6 @@ class _HomeState extends State<Home> {
                         height: 180,
                       ),
                     ),
-
-                    // Categories section
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Column(
@@ -236,21 +183,25 @@ class _HomeState extends State<Home> {
                                   color: AppColors.black,
                                   fontSize: LableTexts.subLable,
                                   fontWeight: FontWeight.w600),
-                              CustomText(
-                                  text: 'See more',
-                                  color: const Color.fromARGB(255, 235, 78, 78),
-                                  fontSize: ParagraphTexts.normalParagraph,
-                                  fontWeight: FontWeight.w600),
+                              GestureDetector(
+                                onTap: () {
+                                  print('See more categories tapped');
+                                  // Navigate to a dedicated categories page if you have one
+                                  NavigationUtils.frontNavigation(context,
+                                      const CategoriesPage()); // Assuming CategoriesPage lists all categories
+                                },
+                                child: CustomText(
+                                    text: 'See more',
+                                    color:
+                                        const Color.fromARGB(255, 235, 78, 78),
+                                    fontSize: ParagraphTexts.normalParagraph,
+                                    fontWeight: FontWeight.w600),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 20),
-
-                          // Category list
                           CategoryList(categories: categories),
-
                           const SizedBox(height: 30),
-
-                          // Latest products section
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -262,8 +213,8 @@ class _HomeState extends State<Home> {
                                   fontWeight: FontWeight.w600),
                               GestureDetector(
                                 onTap: () {
-                                  print('See all products tapped');
-                                  // Add navigation to all products page
+                                  print('See all latest products tapped');
+                                  // Navigate to a page displaying all latest products
                                 },
                                 child: CustomText(
                                     text: 'See all',
@@ -276,11 +227,41 @@ class _HomeState extends State<Home> {
                           ),
                           const SizedBox(height: 15),
 
-                          CustomGridWidget(
-                            items: sampleItems,
-                            spacing: 16.0,
-                            itemHeight: 320.0,
+                          // --- Dynamic Product List from Firestore ---
+                          StreamBuilder<List<Product>>(
+                            stream: _productService
+                                .getAllProducts(), // Fetch all products
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasError) {
+                                return Center(
+                                    child: Text('Error: ${snapshot.error}'));
+                              }
+                              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                return const Center(
+                                    child: Text('No products available.'));
+                              }
+
+                              final products = snapshot.data!;
+                              // Convert Product list to GridItemModel list
+                              final List<GridItemModel> gridItems = products
+                                  .map((product) =>
+                                      _productToGridItemModel(product))
+                                  .toList();
+
+                              return CustomGridWidget(
+                                items: gridItems,
+                                spacing: 16.0,
+                                itemHeight:
+                                    320.0, // Ensure this height is suitable for your ProductCard
+                              );
+                            },
                           ),
+                          // --- End Dynamic Product List ---
 
                           const SizedBox(height: 20),
                         ],

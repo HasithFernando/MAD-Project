@@ -1,30 +1,99 @@
 import 'package:flutter/material.dart';
-import 'package:thriftale/pages/home.dart'; // Add this import for Home page
-import 'package:thriftale/utils/pageNavigations.dart'; // Add this import for NavigationUtils
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import for Timestamp if needed
+import 'package:thriftale/models/product_model.dart'; // Import your Product model
+import 'package:thriftale/pages/home.dart';
+import 'package:thriftale/utils/pageNavigations.dart';
+import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
+import 'package:thriftale/services/wishlist_provider.dart';
 
 class ProductDetails extends StatefulWidget {
-  const ProductDetails({super.key});
+  final Product product; // This page now requires a Product object
+
+  const ProductDetails({super.key, required this.product});
 
   @override
   State<ProductDetails> createState() => _ProductDetailsState();
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
-  int selectedSize = 0;
-  int selectedColor = 0;
+  // Use product properties to initialize these
+  int selectedSizeIndex = 0; // Index of the selected size
+  int selectedColorIndex = 0; // Index of the selected color
   int quantity = 1;
-  bool isFavorite = false;
+  bool isFavorite =
+      false; // You'd typically manage favorites with a service/backend
 
-  final List<String> sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-  final List<Color> colors = [
-    Colors.blue.shade800,
-    Colors.grey.shade600,
-    Colors.black,
-    Colors.brown.shade400,
+  // Define full lists for selection
+  final List<String> availableSizes = [
+    'XS',
+    'S',
+    'M',
+    'L',
+    'XL',
+    'XXL',
+    'Free Size'
   ];
+  final List<Color> availableColors = [
+    Colors.red,
+    Colors.blue.shade800,
+    Colors.green,
+    Colors.black,
+    Colors.white,
+    Colors.brown.shade400,
+    Colors.purple,
+    Colors.orange,
+    Colors.pink,
+    Colors.yellow,
+    Colors.teal,
+    Colors.grey,
+  ];
+  final WishlistService _wishlistService = WishlistService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize selected size and color based on the product data
+    // Find the index of the product's size in the availableSizes list
+    selectedSizeIndex = availableSizes.indexOf(widget.product.size);
+    if (selectedSizeIndex == -1) {
+      selectedSizeIndex = 0; // Default to first size if not found
+    }
+
+    // Find the index of the product's color in the availableColors list
+    // Compare color values since direct Color object comparison might not work as expected
+    selectedColorIndex = availableColors.indexWhere(
+      (color) => color.value == widget.product.color.value,
+    );
+    if (selectedColorIndex == -1) {
+      selectedColorIndex = 0; // Default to first color if not found
+
+      _wishlistService.isFavorite(widget.product.id).then((value) {
+        setState(() {
+          isFavorite = value;
+        });
+      });
+    }
+
+    // You might also check if this product is already favorited by the current user
+    // isFavorite = _checkIfFavorite(widget.product.id); // Requires auth & favorites logic
+  }
+
+  // Helper to format time ago from a Firestore Timestamp
+  String _getTimeAgo(Timestamp timestamp) {
+    final DateTime dateTime = timestamp.toDate();
+    return timeago.format(dateTime);
+  }
+
+  // Helper to format price
+  String _formatPrice(double price) {
+    return 'Rs. ${price.toStringAsFixed(2)}';
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Access the product data using widget.product
+    final Product product = widget.product;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -33,8 +102,7 @@ class _ProductDetailsState extends State<ProductDetails> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            // Use NavigationUtils to go back to Home page
-            NavigationUtils.frontNavigation(context, Home());
+            Navigator.pop(context); // Go back to the previous page
           },
         ),
         actions: [
@@ -43,15 +111,21 @@ class _ProductDetailsState extends State<ProductDetails> {
               isFavorite ? Icons.favorite : Icons.favorite_border,
               color: isFavorite ? Colors.red : Colors.black,
             ),
-            onPressed: () {
+            onPressed: () async {
+              await _wishlistService.toggleFavorite(widget.product);
+              bool newStatus =
+                  await _wishlistService.isFavorite(widget.product.id);
               setState(() {
-                isFavorite = !isFavorite;
+                isFavorite = newStatus;
               });
             },
           ),
           IconButton(
             icon: const Icon(Icons.share, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              // TODO: Implement sharing functionality (e.g., Share.share package)
+              print('Share product');
+            },
           ),
         ],
       ),
@@ -70,22 +144,53 @@ class _ProductDetailsState extends State<ProductDetails> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598', // Replace with your actual network URL
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: const Center(
-                        child: Icon(
-                          Icons.image,
-                          size: 80,
-                          color: Colors.grey,
+                child: product.imageUrls.isNotEmpty
+                    ? Image.network(
+                        product.imageUrls[0], // Display the first image
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child; // Image is fully loaded, show the image
+                          }
+                          // Calculate progress value
+                          double? progressValue;
+                          if (loadingProgress.expectedTotalBytes != null) {
+                            progressValue =
+                                loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!;
+                          }
+
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value:
+                                  progressValue, // Use the calculated progress value (can be null)
+                              color: Colors.brown.shade400,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image,
+                                size: 80,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Colors.grey.shade200,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 80,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                    );
-                  },
-                ),
               ),
             ),
 
@@ -94,12 +199,12 @@ class _ProductDetailsState extends State<ProductDetails> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Brand and CO2 savings
+                  // Seller Name and CO2 savings
                   Row(
                     children: [
-                      const Text(
-                        'Gustavo Rosser',
-                        style: TextStyle(
+                      Text(
+                        product.sellerName, // Dynamic Seller Name
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey,
@@ -116,7 +221,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'Saves 0.2kg CO2',
+                          'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2', // Dynamic CO2 Saved
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.green.shade700,
@@ -130,9 +235,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                   const SizedBox(height: 8),
 
                   // Product title
-                  const Text(
-                    'Classic Denim Shirt',
-                    style: TextStyle(
+                  Text(
+                    product.name, // Dynamic Product Name
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -142,7 +247,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                   // Location and time
                   Text(
-                    'Colombo • 2 days ago',
+                    '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -152,9 +257,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                   const SizedBox(height: 16),
 
                   // Price
-                  const Text(
-                    'Rs. 1000.00',
-                    style: TextStyle(
+                  Text(
+                    _formatPrice(product.price), // Dynamic Price
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -173,15 +278,24 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                   const SizedBox(height: 12),
                   Row(
-                    children: sizes.asMap().entries.map((entry) {
+                    children: availableSizes.asMap().entries.map((entry) {
                       int index = entry.key;
                       String size = entry.value;
-                      bool isSelected = selectedSize == index;
+                      bool isSelected = selectedSizeIndex == index;
 
                       return GestureDetector(
                         onTap: () {
+                          // Only allow selection if the product's actual size matches this option,
+                          // or if you want to allow users to select from available sizes.
+                          // For a thrift shop, typically a product has one specific size.
+                          // If you want to only highlight the product's actual size:
+                          // if (size == product.size) { // Only highlight the actual size
+                          //   setState(() { selectedSizeIndex = index; });
+                          // }
+
+                          // If you want to let the user "select" available sizes (even if the product has only one):
                           setState(() {
-                            selectedSize = index;
+                            selectedSizeIndex = index;
                           });
                         },
                         child: Container(
@@ -225,15 +339,22 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                   const SizedBox(height: 12),
                   Row(
-                    children: colors.asMap().entries.map((entry) {
+                    children: availableColors.asMap().entries.map((entry) {
                       int index = entry.key;
                       Color color = entry.value;
-                      bool isSelected = selectedColor == index;
+                      bool isSelected = selectedColorIndex == index;
 
                       return GestureDetector(
                         onTap: () {
+                          // Similar to size, for a thrift shop, a product has one specific color.
+                          // If you want to only highlight the product's actual color:
+                          // if (color.value == product.color.value) { // Only highlight the actual color
+                          //   setState(() { selectedColorIndex = index; });
+                          // }
+
+                          // If you want to let the user "select" available colors:
                           setState(() {
-                            selectedColor = index;
+                            selectedColorIndex = index;
                           });
                         },
                         child: Container(
@@ -263,7 +384,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                   const SizedBox(height: 24),
 
-                  // Quantity selection
+                  // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
                   Row(
                     children: [
                       const Text(
@@ -326,7 +447,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Classic denim shirt in excellent condition. Perfect for casual wear or can be dressed up. Made from high-quality denim fabric. Sustainable fashion choice that helps reduce carbon footprint.',
+                    product.description, // Dynamic Description
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade700,
@@ -357,7 +478,11 @@ class _ProductDetailsState extends State<ProductDetails> {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // TODO: Implement Add to Cart logic
+                  print(
+                      'Add to Cart: ${product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.brown.shade400,
                   foregroundColor: Colors.white,
@@ -378,7 +503,11 @@ class _ProductDetailsState extends State<ProductDetails> {
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // TODO: Implement Buy Now logic (e.g., direct checkout)
+                  print(
+                      'Buy Now: ${product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
+                },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.brown.shade400,
                   side: BorderSide(color: Colors.brown.shade400),
