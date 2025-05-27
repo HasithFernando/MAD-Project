@@ -262,230 +262,6 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                     const SizedBox(height: 24),
 
-                    // Size selection
-                    const Text(
-                      'Size',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: availableSizes.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        String size = entry.value;
-                        bool isSelected = selectedSizeIndex == index;
-
-                        return GestureDetector(
-                          onTap: () {
-                            // Only allow selection if the product's actual size matches this option,
-                            // or if you want to allow users to select from available sizes.
-                            // For a thrift shop, typically a product has one specific size.
-                            // If you want to only highlight the product's actual size:
-                            // if (size == product.size) { // Only highlight the actual size
-                            //   setState(() { selectedSizeIndex = index; });
-                            // }
-
-                            // If you want to let the user "select" available sizes (even if the product has only one):
-                            setState(() {
-                              selectedSizeIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.brown.shade400
-                                  : Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.brown.shade400
-                                    : Colors.grey.shade300,
-                              ),
-                            ),
-                            child: Text(
-                              size,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Color selection
-                    const Text(
-                      'Color',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: availableColors.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      Color color = entry.value;
-                      bool isSelected = selectedColorIndex == index;
-
-                      return GestureDetector(
-                        onTap: () {
-                          // Similar to size, for a thrift shop, a product has one specific color.
-                          // If you want to only highlight the product's actual color:
-                          // if (color.value == product.color.value) { // Only highlight the actual color
-                          //   setState(() { selectedColorIndex = index; });
-                          // }
-
-                          // If you want to let the user "select" available colors:
-                          setState(() {
-                            selectedColorIndex = index;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.brown.shade400
-                                  : Colors.grey.shade300,
-                              width: 2,
-                            ),
-                          ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: availableColors.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        Color color = entry.value;
-                        bool isSelected = selectedColorIndex == index;
-
-                        return GestureDetector(
-                          onTap: () {
-                            // Similar to size, for a thrift shop, a product has one specific color.
-                            // If you want to only highlight the product's actual color:
-                            // if (color.value == product.color.value) { // Only highlight the actual color
-                            //   setState(() { selectedColorIndex = index; });
-                            // }
-
-                            // If you want to let the user "select" available colors:
-                            setState(() {
-                              selectedColorIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.brown.shade400
-                                    : Colors.grey.shade300,
-                                width: 2,
-                              ),
-                            ),
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
-                    Row(
-                      children: [
-                        const Text(
-                          'Quantity',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                onPressed: quantity > 1
-                                    ? () {
-                                        setState(() {
-                                          quantity--;
-                                        });
-                                      }
-                                    : null,
-                                icon: const Icon(Icons.remove),
-                                color:
-                                    quantity > 1 ? Colors.black : Colors.grey,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  quantity++;
-                                });
-                              },
-                              icon: const Icon(Icons.add),
-                              color: Colors.black,
-                            ),
-                          ],
-                    // Product title
-                    Text(
-                      product.name, // Dynamic Product Name
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    // Location and time
-                    Text(
-                      '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Price
-                    Text(
-                      _formatPrice(product.price), // Dynamic Price
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
                     // Display Current Size
                     const Text(
                       'Size',
@@ -549,6 +325,27 @@ class _ProductDetailsState extends State<ProductDetails> {
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: quantity > 1
+                                    ? () {
+                                        setState(() {
+                                          quantity--;
+                                        });
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.remove),
+                                color:
+                                    quantity > 1 ? Colors.black : Colors.grey,
+                              ),
                               Text(
                                 quantity.toString(),
                                 style: const TextStyle(
@@ -595,37 +392,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade200,
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement Add to Cart logic
-                  print(
-                      'Add to Cart: ${product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown.shade400,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
             ],
           ),
         ),
@@ -649,7 +415,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                     // TODO: Implement Add to Cart logic
                     print(
                         'Add to Cart: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
-
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown.shade400,
@@ -668,21 +433,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  // TODO: Implement Buy Now logic (e.g., direct checkout)
-                  print(
-                      'Buy Now: ${product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.brown.shade400,
-                  side: BorderSide(color: Colors.brown.shade400),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
