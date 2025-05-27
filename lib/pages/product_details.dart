@@ -8,7 +8,6 @@ import '../widgets/submit_review_form.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/average_rating_display.dart';
 
-
 class ProductDetails extends StatefulWidget {
   final Product product; // This page now requires a Product object
 
@@ -19,14 +18,11 @@ class ProductDetails extends StatefulWidget {
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
-  // Use product properties to initialize these
-  int selectedSizeIndex = 0; // Index of the selected size
-  int selectedColorIndex = 0; // Index of the selected color
+  int selectedSizeIndex = 0;
+  int selectedColorIndex = 0;
   int quantity = 1;
-  bool isFavorite =
-      false; // You'd typically manage favorites with a service/backend
+  bool isFavorite = false;
 
-  // Define full lists for selection
   final List<String> availableSizes = [
     'XS',
     'S',
@@ -54,43 +50,32 @@ class _ProductDetailsState extends State<ProductDetails> {
   @override
   void initState() {
     super.initState();
-    // Initialize selected size and color based on the product data
-    // Find the index of the product's size in the availableSizes list
     selectedSizeIndex = availableSizes.indexOf(widget.product.size);
     if (selectedSizeIndex == -1) {
-      selectedSizeIndex = 0; // Default to first size if not found
+      selectedSizeIndex = 0;
     }
 
-    // Find the index of the product's color in the availableColors list
-    // Compare color values since direct Color object comparison might not work as expected
     selectedColorIndex = availableColors.indexWhere(
       (color) => color.value == widget.product.color.value,
     );
     if (selectedColorIndex == -1) {
-      selectedColorIndex = 0; // Default to first color if not found
+      selectedColorIndex = 0;
     }
-
-    // You might also check if this product is already favorited by the current user
-    // isFavorite = _checkIfFavorite(widget.product.id); // Requires auth & favorites logic
   }
 
-  // Helper to format time ago from a Firestore Timestamp
   String _getTimeAgo(Timestamp timestamp) {
     final DateTime dateTime = timestamp.toDate();
     return timeago.format(dateTime);
   }
 
-  // Helper to format price
   String _formatPrice(double price) {
     return 'Rs. ${price.toStringAsFixed(2)}';
   }
 
-  // Method to handle back navigation
   void _navigateBack() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     } else {
-      // If there's no previous page in the stack, navigate to Home
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const Home()),
@@ -99,15 +84,24 @@ class _ProductDetailsState extends State<ProductDetails> {
     }
   }
 
+  void _onAddToCart() {
+    print(
+        'Add to Cart: ${widget.product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
+  }
+
+  void _onBuyNow() {
+    print(
+        'Buy Now: ${widget.product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Access the product data using widget.product
     final Product product = widget.product;
 
     return WillPopScope(
       onWillPop: () async {
         _navigateBack();
-        return false; // Prevent default back behavior
+        return false;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -116,7 +110,7 @@ class _ProductDetailsState extends State<ProductDetails> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: _navigateBack, // Use the custom navigation method
+            onPressed: _navigateBack,
           ),
           actions: [
             IconButton(
@@ -127,14 +121,12 @@ class _ProductDetailsState extends State<ProductDetails> {
               onPressed: () {
                 setState(() {
                   isFavorite = !isFavorite;
-                  // TODO: Implement logic to save/remove from user favorites in Firestore
                 });
               },
             ),
             IconButton(
               icon: const Icon(Icons.share, color: Colors.black),
               onPressed: () {
-                // TODO: Implement sharing functionality (e.g., Share.share package)
                 print('Share product');
               },
             ),
@@ -144,7 +136,6 @@ class _ProductDetailsState extends State<ProductDetails> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Image
               Container(
                 height: 300,
                 width: double.infinity,
@@ -157,24 +148,18 @@ class _ProductDetailsState extends State<ProductDetails> {
                   borderRadius: BorderRadius.circular(12),
                   child: product.imageUrls.isNotEmpty
                       ? Image.network(
-                          product.imageUrls[0], // Display the first image
+                          product.imageUrls[0],
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child; // Image is fully loaded, show the image
-                            }
-                            // Calculate progress value
+                            if (loadingProgress == null) return child;
                             double? progressValue;
                             if (loadingProgress.expectedTotalBytes != null) {
-                              progressValue =
-                                  loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!;
+                              progressValue = loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!;
                             }
-
                             return Center(
                               child: CircularProgressIndicator(
-                                value:
-                                    progressValue, // Use the calculated progress value (can be null)
+                                value: progressValue,
                                 color: Colors.brown.shade400,
                               ),
                             );
@@ -183,11 +168,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                             return Container(
                               color: Colors.grey.shade200,
                               child: const Center(
-                                child: Icon(
-                                  Icons.image,
-                                  size: 80,
-                                  color: Colors.grey,
-                                ),
+                                child: Icon(Icons.image, size: 80, color: Colors.grey),
                               ),
                             );
                           },
@@ -195,26 +176,20 @@ class _ProductDetailsState extends State<ProductDetails> {
                       : Container(
                           color: Colors.grey.shade200,
                           child: const Center(
-                            child: Icon(
-                              Icons.image,
-                              size: 80,
-                              color: Colors.grey,
-                            ),
+                            child: Icon(Icons.image, size: 80, color: Colors.grey),
                           ),
                         ),
                 ),
               ),
-
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Seller Name and CO2 savings
                     Row(
                       children: [
                         Text(
-                          product.sellerName, // Dynamic Seller Name
+                          product.sellerName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -223,16 +198,13 @@ class _ProductDetailsState extends State<ProductDetails> {
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.green.shade100,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2', // Dynamic CO2 Saved
+                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.green.shade700,
@@ -242,231 +214,54 @@ class _ProductDetailsState extends State<ProductDetails> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 8),
-
-                    // Product title
                     Text(
-                      product.name, // Dynamic Product Name
+                      product.name,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
-                    // Location and time
                     Text(
-                      '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
+                      '${product.location} • ${_getTimeAgo(product.timestamp)}',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
                       ),
                     ),
-
+                    const SizedBox(height: 12),
+                    AverageRatingDisplay(productId: product.id),
                     const SizedBox(height: 16),
-
-                    // Price
                     Text(
-                      _formatPrice(product.price), // Dynamic Price
+                      _formatPrice(product.price),
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Size selection
-                    const Text(
-                      'Size',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: availableSizes.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        String size = entry.value;
-                        bool isSelected = selectedSizeIndex == index;
-
-                        return GestureDetector(
-                          onTap: () {
-                            // Only allow selection if the product's actual size matches this option,
-                            // or if you want to allow users to select from available sizes.
-                            // For a thrift shop, typically a product has one specific size.
-                            // If you want to only highlight the product's actual size:
-                            // if (size == product.size) { // Only highlight the actual size
-                            //   setState(() { selectedSizeIndex = index; });
-                            // }
-
-                            // If you want to let the user "select" available sizes (even if the product has only one):
-                            setState(() {
-                              selectedSizeIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.brown.shade400
-                                  : Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.brown.shade400
-                                    : Colors.grey.shade300,
-                              ),
-                            ),
-                            child: Text(
-                              size,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Color selection
-                    const Text(
-                      'Color',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: availableColors.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        Color color = entry.value;
-                        bool isSelected = selectedColorIndex == index;
-
-                        return GestureDetector(
-                          onTap: () {
-                            // Similar to size, for a thrift shop, a product has one specific color.
-                            // If you want to only highlight the product's actual color:
-                            // if (color.value == product.color.value) { // Only highlight the actual color
-                            //   setState(() { selectedColorIndex = index; });
-                            // }
-
-                            // If you want to let the user "select" available colors:
-                            setState(() {
-                              selectedColorIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.brown.shade400
-                                    : Colors.grey.shade300,
-                                width: 2,
-                              ),
-                            ),
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
-                    Row(
-                      children: [
-                        const Text(
-                          'Quantity',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                onPressed: quantity > 1
-                                    ? () {
-                                        setState(() {
-                                          quantity--;
-                                        });
-                                      }
-                                    : null,
-                                icon: const Icon(Icons.remove),
-                                color:
-                                    quantity > 1 ? Colors.black : Colors.grey,
-                              ),
-                              Text(
-                                quantity.toString(),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    quantity++;
-                                  });
-                                },
-                                icon: const Icon(Icons.add),
-                                color: Colors.black,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Description
-                    const Text(
-                      'Description',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                     const SizedBox(height: 8),
                     Text(
-                      product.description, // Dynamic Description
+                      product.description,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade700,
                         height: 1.5,
                       ),
                     ),
-
+                    const SizedBox(height: 24),
+                    SubmitReviewForm(productId: product.id),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'User Reviews',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ReviewsSection(productId: product.id),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -490,11 +285,7 @@ class _ProductDetailsState extends State<ProductDetails> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement Add to Cart logic
-                    print(
-                        'Add to Cart: ${product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
-                  },
+                  onPressed: _onAddToCart,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown.shade400,
                     foregroundColor: Colors.white,
@@ -515,11 +306,7 @@ class _ProductDetailsState extends State<ProductDetails> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Implement Buy Now logic (e.g., direct checkout)
-                    print(
-                        'Buy Now: ${product.name}, Size: ${availableSizes[selectedSizeIndex]}, Color: ${availableColors[selectedColorIndex]}, Quantity: $quantity');
-                  },
+                  onPressed: _onBuyNow,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.brown.shade400,
                     side: BorderSide(color: Colors.brown.shade400),
