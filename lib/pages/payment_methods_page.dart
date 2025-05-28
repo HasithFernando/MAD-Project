@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:thriftale/models/payment_method_model.dart';
 import 'package:thriftale/pages/add_payment_method_page.dart';
 import 'package:thriftale/services/payment_service.dart';
-import 'package:thriftale/services/payment_service.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
@@ -439,6 +438,9 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
               try {
                 await _paymentService.deletePaymentMethod(paymentMethod.id);
                 if (mounted) {
+                  // Return true to indicate payment method was deleted
+                  Navigator.of(context).pop(true);
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Payment method deleted'),

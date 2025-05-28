@@ -4,6 +4,7 @@ import 'package:thriftale/models/payment_method_model.dart';
 import 'package:thriftale/pages/success.dart';
 import 'package:thriftale/pages/cart.dart';
 import 'package:thriftale/pages/payment_methods_page.dart';
+import 'package:thriftale/pages/add_payment_method_page.dart';
 import 'package:thriftale/services/cart_service.dart';
 import 'package:thriftale/services/checkout_service.dart';
 import 'package:thriftale/services/product_service.dart';
@@ -35,6 +36,7 @@ class _CheckoutState extends State<Checkout> {
   List<Map<String, dynamic>> _cartItems = [];
   List<Product?> _products = [];
   PaymentMethod? _selectedPaymentMethod;
+  bool _hasPaymentMethods = false;
 
   // Default address (in real app, this would be selected by user)
   final Map<String, dynamic> _defaultAddress = {
@@ -71,13 +73,39 @@ class _CheckoutState extends State<Checkout> {
         _orderSummary = await _calculateOrderSummary();
       }
 
-      // Load default payment method
-      _selectedPaymentMethod = await _paymentService.getDefaultPaymentMethod();
+      // Load payment methods and check if any exist
+      await _loadPaymentMethods();
     } catch (e) {
       _showErrorDialog('Failed to load checkout data: $e');
     } finally {
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadPaymentMethods() async {
+    try {
+      // Get all payment methods
+      final paymentMethodsStream = _paymentService.getPaymentMethods();
+      final paymentMethods = await paymentMethodsStream.first;
+
+      setState(() {
+        _hasPaymentMethods = paymentMethods.isNotEmpty;
+      });
+
+      if (_hasPaymentMethods) {
+        // Load default payment method
+        _selectedPaymentMethod =
+            await _paymentService.getDefaultPaymentMethod();
+      } else {
+        _selectedPaymentMethod = null;
+      }
+    } catch (e) {
+      print('Error loading payment methods: $e');
+      setState(() {
+        _hasPaymentMethods = false;
+        _selectedPaymentMethod = null;
       });
     }
   }
@@ -109,8 +137,8 @@ class _CheckoutState extends State<Checkout> {
       return;
     }
 
-    if (_selectedPaymentMethod == null) {
-      _showErrorDialog('Please select a payment method to continue');
+    if (!_hasPaymentMethods || _selectedPaymentMethod == null) {
+      _showErrorDialog('Please add a payment method to continue');
       return;
     }
 
@@ -350,6 +378,208 @@ class _CheckoutState extends State<Checkout> {
     }
   }
 
+  Widget _buildAddPaymentMethodSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.only(top: 12.0),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CustomText(
+                text: 'Payment Method',
+                color: AppColors.black,
+                fontSize: ParagraphTexts.textFieldLable,
+                fontWeight: FontWeight.w600,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
+          // Add Payment Method Button
+          InkWell(
+            onTap: () async {
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AddPaymentMethodPage(),
+                ),
+              );
+              if (result == true) {
+                // Reload payment methods after adding new one
+                await _loadPaymentMethods();
+                setState(() {});
+              }
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 213, 167, 66).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color.fromARGB(255, 213, 167, 66),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_card,
+                    color: const Color.fromARGB(255, 213, 167, 66),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  CustomText(
+                    text: 'Add Payment Method',
+                    color: const Color.fromARGB(255, 213, 167, 66),
+                    fontSize: ParagraphTexts.textFieldLable,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: CustomText(
+              text: 'You need to add a payment method to proceed',
+              color: Colors.grey[600]!,
+              fontSize: ParagraphTexts.normalParagraph * 0.9,
+              fontWeight: FontWeight.w400,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExistingPaymentMethodSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.only(top: 12.0),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CustomText(
+                text: 'Payment Method',
+                color: AppColors.black,
+                fontSize: ParagraphTexts.textFieldLable,
+                fontWeight: FontWeight.w600,
+              ),
+              GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const PaymentMethodsPage(),
+                    ),
+                  );
+                  if (result == true) {
+                    // Reload payment method after changes
+                    await _loadPaymentMethods();
+                    setState(() {});
+                  }
+                },
+                child: CustomText(
+                  text: 'Change',
+                  color: Colors.red,
+                  fontSize: ParagraphTexts.textFieldLable,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
+          // Payment Method Display
+          if (_selectedPaymentMethod != null) ...[
+            Row(
+              children: [
+                // Card type icon
+                _buildCardTypeIcon(_selectedPaymentMethod!.type),
+                const SizedBox(width: 12.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      text: _selectedPaymentMethod!.maskedCardNumber,
+                      color: AppColors.black,
+                      fontSize: ParagraphTexts.textFieldLable,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 2),
+                    CustomText(
+                      text: _selectedPaymentMethod!.cardHolderName,
+                      color: Colors.grey[600]!,
+                      fontSize: ParagraphTexts.normalParagraph,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ] else ...[
+            // Fallback when payment method is null but hasPaymentMethods is true
+            Row(
+              children: [
+                _buildCardTypeIcon('visa'),
+                const SizedBox(width: 12.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      text: '**** **** **** ****',
+                      color: AppColors.black,
+                      fontSize: ParagraphTexts.textFieldLable,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 2),
+                    CustomText(
+                      text: 'Loading payment method...',
+                      color: Colors.grey[600]!,
+                      fontSize: ParagraphTexts.normalParagraph,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -483,142 +713,18 @@ class _CheckoutState extends State<Checkout> {
 
                                 const SizedBox(height: 20),
 
-                                // Payment Section - UPDATED
+                                // Payment Section - Conditional Display
                                 CustomText(
                                   text: 'Payment',
                                   color: AppColors.black,
                                   fontSize: ParagraphTexts.textFieldLable,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(16.0),
-                                  margin: const EdgeInsets.only(top: 12.0),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.white,
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          CustomText(
-                                            text: 'Payment Method',
-                                            color: AppColors.black,
-                                            fontSize:
-                                                ParagraphTexts.textFieldLable,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          GestureDetector(
-                                            onTap: () async {
-                                              final result =
-                                                  await Navigator.of(context)
-                                                      .push(
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const PaymentMethodsPage(),
-                                                ),
-                                              );
-                                              if (result == true) {
-                                                // Reload payment method after changes
-                                                final updatedPaymentMethod =
-                                                    await _paymentService
-                                                        .getDefaultPaymentMethod();
-                                                setState(() {
-                                                  _selectedPaymentMethod =
-                                                      updatedPaymentMethod;
-                                                });
-                                              }
-                                            },
-                                            child: CustomText(
-                                              text: 'Change',
-                                              color: Colors.red,
-                                              fontSize:
-                                                  ParagraphTexts.textFieldLable,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16.0),
-                                      // Payment Method Display - Always show default card or placeholder
-                                      if (_selectedPaymentMethod != null) ...[
-                                        Row(
-                                          children: [
-                                            // Card type icon
-                                            _buildCardTypeIcon(
-                                                _selectedPaymentMethod!.type),
-                                            const SizedBox(width: 12.0),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                CustomText(
-                                                  text: _selectedPaymentMethod!
-                                                      .maskedCardNumber,
-                                                  color: AppColors.black,
-                                                  fontSize: ParagraphTexts
-                                                      .textFieldLable,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                                const SizedBox(height: 2),
-                                                CustomText(
-                                                  text: _selectedPaymentMethod!
-                                                      .cardHolderName,
-                                                  color: Colors.grey[600]!,
-                                                  fontSize: ParagraphTexts
-                                                      .normalParagraph,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ] else ...[
-                                        // Show a default card placeholder when no payment method is available
-                                        Row(
-                                          children: [
-                                            _buildCardTypeIcon(
-                                                'visa'), // Default card icon
-                                            const SizedBox(width: 12.0),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                CustomText(
-                                                  text: '**** **** **** 1234',
-                                                  color: AppColors.black,
-                                                  fontSize: ParagraphTexts
-                                                      .textFieldLable,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                                const SizedBox(height: 2),
-                                                CustomText(
-                                                  text: 'Default Card',
-                                                  color: Colors.grey[600]!,
-                                                  fontSize: ParagraphTexts
-                                                      .normalParagraph,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
+
+                                // Show different sections based on payment method availability
+                                _hasPaymentMethods
+                                    ? _buildExistingPaymentMethodSection()
+                                    : _buildAddPaymentMethodSection(),
 
                                 const SizedBox(height: 30),
 
@@ -645,14 +751,19 @@ class _CheckoutState extends State<Checkout> {
 
                                 const SizedBox(height: 80),
 
-                                // Submit Button - Enhanced with better loading state
+                                // Submit Button - Enhanced with better loading state and conditional enabling
                                 CustomButton(
                                   text: _isLoading
                                       ? 'Processing...'
-                                      : 'Submit Order',
+                                      : !_hasPaymentMethods
+                                          ? 'Add Payment Method to Continue'
+                                          : 'Submit Order',
                                   backgroundColor: _isLoading
                                       ? Colors.grey
-                                      : const Color.fromARGB(255, 213, 167, 66),
+                                      : !_hasPaymentMethods
+                                          ? Colors.grey[400]!
+                                          : const Color.fromARGB(
+                                              255, 213, 167, 66),
                                   textColor: AppColors.white,
                                   textWeight: FontWeight.w600,
                                   textSize: ParagraphTexts.textFieldLable,
@@ -663,7 +774,23 @@ class _CheckoutState extends State<Checkout> {
                                       ? () {
                                           // Do nothing when loading - button is disabled
                                         }
-                                      : _processCheckout,
+                                      : !_hasPaymentMethods
+                                          ? () async {
+                                              // Navigate to add payment method
+                                              final result =
+                                                  await Navigator.of(context)
+                                                      .push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const AddPaymentMethodPage(),
+                                                ),
+                                              );
+                                              if (result == true) {
+                                                await _loadPaymentMethods();
+                                                setState(() {});
+                                              }
+                                            }
+                                          : _processCheckout,
                                 ),
 
                                 const SizedBox(height: 30),
