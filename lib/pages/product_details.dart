@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import for Timestamp if needed
-import 'package:thriftale/models/product_model.dart'; // Import your Product model
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:thriftale/models/product_model.dart';
 import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
-import 'package:timeago/timeago.dart' as timeago; // For timeAgo calculation
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:thriftale/services/cart_service.dart';
-import 'package:thriftale/pages/wishlist.dart'; // Make sure this import exists
+import 'package:thriftale/pages/wishlist.dart'; 
 import 'package:thriftale/services/wishlist_service.dart';
 
+
 class ProductDetails extends StatefulWidget {
-  final Product product; // This page now requires a Product object
+  final Product product;
 
   const ProductDetails({super.key, required this.product});
 
@@ -19,47 +20,14 @@ class ProductDetails extends StatefulWidget {
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
-  // These are no longer needed as we are directly displaying product's size and color
-  // int selectedSizeIndex = 0;
-  // int selectedColorIndex = 0;
   int quantity = 1;
   bool isFavorite = false;
-  bool _isTogglingFavorite =
-      false; // You'd typically manage favorites with a service/backend
-
-  // Remove the full lists for selection
-  // final List<String> availableSizes = [
-  //   'XS',
-  //   'S',
-  //   'M',
-  //   'L',
-  //   'XL',
-  //   'XXL',
-  //   'Free Size'
-  // ];
-  // final List<Color> availableColors = [
-  //   Colors.red,
-  //   Colors.blue.shade800,
-  //   Colors.green,
-  //   Colors.black,
-  //   Colors.white,
-  //   Colors.brown.shade400,
-  //   Colors.purple,
-  //   Colors.orange,
-  //   Colors.pink,
-  //   Colors.yellow,
-  //   Colors.teal,
-  //   Colors.grey,
-  // ];
+  bool _isTogglingFavorite = false;
+  bool isAddingToCart = false; 
 
   @override
   void initState() {
     super.initState();
-    // No need to initialize selectedSizeIndex or selectedColorIndex from available lists
-    // as we're directly using widget.product.size and widget.product.color.
-
-    // You might also check if this product is already favorited by the current user
-    // isFavorite = _checkIfFavorite(widget.product.id); // Requires auth & favorites logic
     _checkIfInWishlist();
   }
 
@@ -86,7 +54,6 @@ class _ProductDetailsState extends State<ProductDetails> {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     } else {
-      // If there's no previous page in the stack, navigate to Home
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const Home()),
@@ -95,15 +62,85 @@ class _ProductDetailsState extends State<ProductDetails> {
     }
   }
 
+  // Method to add single item to cart when quantity is increased
+  Future<void> _addSingleItemToCart() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to add items to cart.')),
+      );
+      return;
+    }
+
+    setState(() {
+      isAddingToCart = true;
+    });
+
+    try {
+      await CartService().addToCart(
+        user.uid,
+        widget.product.id,
+        1, // Add only 1 item at a time
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.product.name} added to cart!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error adding to cart: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to add to cart.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isAddingToCart = false;
+        });
+      }
+    }
+  }
+
+  // Method to handle quantity increase with auto cart addition
+  void _increaseQuantity() async {
+    setState(() {
+      quantity++;
+    });
+
+    // Automatically add the item to cart when quantity is increased
+    await _addSingleItemToCart();
+  }
+
+  // Method to handle quantity decrease
+  void _decreaseQuantity() {
+    if (quantity > 1) {
+      setState(() {
+        quantity--;
+      });
+      // Note: You might want to implement logic to remove from cart here as well
+      // This would require a method to remove a single item from cart
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Access the product data using widget.product
     final Product product = widget.product;
 
     return WillPopScope(
       onWillPop: () async {
         _navigateBack();
-        return false; // Prevent default back behavior
+        return false;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -112,7 +149,7 @@ class _ProductDetailsState extends State<ProductDetails> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: _navigateBack, // Use the custom navigation method
+            onPressed: _navigateBack,
           ),
           actions: [
             IconButton(
@@ -149,7 +186,6 @@ class _ProductDetailsState extends State<ProductDetails> {
             IconButton(
               icon: const Icon(Icons.share, color: Colors.black),
               onPressed: () {
-                // TODO: Implement sharing functionality (e.g., Share.share package)
                 print('Share product');
               },
             ),
@@ -172,13 +208,12 @@ class _ProductDetailsState extends State<ProductDetails> {
                   borderRadius: BorderRadius.circular(12),
                   child: product.imageUrls.isNotEmpty
                       ? Image.network(
-                          product.imageUrls[0], // Display the first image
+                          product.imageUrls[0],
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) {
-                              return child; // Image is fully loaded, show the image
+                              return child;
                             }
-                            // Calculate progress value
                             double? progressValue;
                             if (loadingProgress.expectedTotalBytes != null) {
                               progressValue =
@@ -188,8 +223,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                             return Center(
                               child: CircularProgressIndicator(
-                                value:
-                                    progressValue, // Use the calculated progress value (can be null)
+                                value: progressValue,
                                 color: Colors.brown.shade400,
                               ),
                             );
@@ -229,7 +263,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                     Row(
                       children: [
                         Text(
-                          product.sellerName, // Dynamic Seller Name
+                          product.sellerName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -247,7 +281,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2', // Dynamic CO2 Saved
+                            'Saves ${product.co2Saved.toStringAsFixed(2)}kg CO2',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.green.shade700,
@@ -262,7 +296,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                     // Product title
                     Text(
-                      product.name, // Dynamic Product Name
+                      product.name,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -273,7 +307,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                     // Location and time
                     Text(
-                      '${product.location} • ${_getTimeAgo(product.timestamp)}', // Dynamic Location and Time
+                      '${product.location} • ${_getTimeAgo(product.timestamp)}',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -284,7 +318,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                     // Price
                     Text(
-                      _formatPrice(product.price), // Dynamic Price
+                      _formatPrice(product.price),
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -313,7 +347,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        product.size, // Display the product's actual size
+                        product.size,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -336,8 +370,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color:
-                            product.color, // Display the product's actual color
+                        color: product.color,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: Colors.grey.shade300,
@@ -348,7 +381,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                     const SizedBox(height: 24),
 
-                    // Quantity selection (mostly useful if you have multiple of the exact same thrift item)
+                    // Quantity selection with auto cart addition
                     Row(
                       children: [
                         const Text(
@@ -367,37 +400,60 @@ class _ProductDetailsState extends State<ProductDetails> {
                           child: Row(
                             children: [
                               IconButton(
-                                onPressed: quantity > 1
-                                    ? () {
-                                        setState(() {
-                                          quantity--;
-                                        });
-                                      }
-                                    : null,
+                                onPressed:
+                                    quantity > 1 ? _decreaseQuantity : null,
                                 icon: const Icon(Icons.remove),
                                 color:
                                     quantity > 1 ? Colors.black : Colors.grey,
                               ),
-                              Text(
-                                quantity.toString(),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      quantity.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    if (isAddingToCart) ...[
+                                      const SizedBox(width: 8),
+                                      const SizedBox(
+                                        width: 12,
+                                        height: 12,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
                               IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    quantity++;
-                                  });
-                                },
+                                onPressed:
+                                    isAddingToCart ? null : _increaseQuantity,
                                 icon: const Icon(Icons.add),
-                                color: Colors.black,
+                                color:
+                                    isAddingToCart ? Colors.grey : Colors.black,
                               ),
                             ],
                           ),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Info text about auto cart addition
+                    Text(
+                      'Items are automatically added to cart when you increase quantity',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
 
                     const SizedBox(height: 24),
@@ -412,7 +468,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      product.description, // Dynamic Description
+                      product.description,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade700,
@@ -447,9 +503,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                     final user = FirebaseAuth.instance.currentUser;
 
                     if (user == null) {
-                      // Optionally redirect to login
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                             content:
                                 Text('Please log in to add items to cart.')),
                       );
@@ -460,16 +515,16 @@ class _ProductDetailsState extends State<ProductDetails> {
                       await CartService().addToCart(
                         user.uid,
                         product.id,
-                        quantity, // from your quantity selector
+                        quantity,
                       );
 
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Added to cart!')),
+                        const SnackBar(content: Text('Added to cart!')),
                       );
                     } catch (e) {
                       print('Error adding to cart: $e');
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to add to cart.')),
+                        const SnackBar(content: Text('Failed to add to cart.')),
                       );
                     }
                   },
@@ -494,7 +549,6 @@ class _ProductDetailsState extends State<ProductDetails> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () {
-                    // TODO: Implement Buy Now logic (e.g., direct checkout)
                     print(
                         'Buy Now: ${product.name}, Size: ${product.size}, Color: ${product.color.value}, Quantity: $quantity');
                   },
