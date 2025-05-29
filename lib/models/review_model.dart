@@ -80,7 +80,7 @@ class SellerRating {
   factory SellerRating.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     final breakdown = Map<String, dynamic>.from(data['ratingBreakdown'] ?? {});
-    
+
     return SellerRating(
       sellerId: doc.id,
       averageRating: (data['averageRating'] ?? 0).toDouble(),
