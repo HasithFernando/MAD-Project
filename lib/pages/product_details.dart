@@ -6,9 +6,9 @@ import 'package:thriftale/utils/pageNavigations.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:thriftale/services/cart_service.dart';
-import 'package:thriftale/pages/wishlist.dart'; 
+import 'package:thriftale/pages/wishlist.dart';
 import 'package:thriftale/services/wishlist_service.dart';
-
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class ProductDetails extends StatefulWidget {
   final Product product;
@@ -23,12 +23,38 @@ class _ProductDetailsState extends State<ProductDetails> {
   int quantity = 1;
   bool isFavorite = false;
   bool _isTogglingFavorite = false;
-  bool isAddingToCart = false; 
+  bool isAddingToCart = false;
+  double averageRating = 0.0;
+  List<Map<String, dynamic>> reviews = [];
 
   @override
   void initState() {
     super.initState();
     _checkIfInWishlist();
+    _fetchReviews();
+  }
+
+  void _fetchReviews() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .doc(widget.product.id)
+        .collection('reviews')
+        .orderBy('timestamp', descending: true)
+        .get();
+
+    double total = 0.0;
+    List<Map<String, dynamic>> loadedReviews = [];
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+      loadedReviews.add(data);
+      total += (data['rating'] as num).toDouble();
+    }
+
+    setState(() {
+      reviews = loadedReviews;
+      averageRating = reviews.isNotEmpty ? total / reviews.length : 0.0;
+    });
   }
 
   // Helper to format time ago from a Firestore Timestamp
@@ -36,6 +62,10 @@ class _ProductDetailsState extends State<ProductDetails> {
     final DateTime dateTime = timestamp.toDate();
     return timeago.format(dateTime);
   }
+
+  // Rest of your existing methods and build function...
+  // [Keep all other methods and UI code unchanged below this line]
+
 
   // Helper to format price
   String _formatPrice(double price) {
@@ -474,6 +504,101 @@ class _ProductDetailsState extends State<ProductDetails> {
                         color: Colors.grey.shade700,
                         height: 1.5,
                       ),
+                    ),
+// Reviews and Ratings Section
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      'Customer Reviews',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    SubmitReviewForm(itemId: product.id), // Make sure 'product' has an 'id'
+
+
+// Average Rating Stars
+                    Row(
+                      children: [
+                        RatingBarIndicator(
+                          rating: averageRating,
+                          itemBuilder: (context, _) => const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          itemCount: 5,
+                          itemSize: 24.0,
+                          direction: Axis.horizontal,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '(${averageRating.toStringAsFixed(1)})',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+// Reviews List
+                    reviews.isEmpty
+                        ? Text(
+                      'No reviews yet. Be the first to review this product!',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    )
+                        : ListView.builder(
+                      itemCount: reviews.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final review = reviews[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Rating
+                              RatingBarIndicator(
+                                rating: (review['rating'] as num).toDouble(),
+                                itemBuilder: (context, _) => const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                ),
+                                itemCount: 5,
+                                itemSize: 20.0,
+                              ),
+                              const SizedBox(height: 4),
+                              // Comment
+                              Text(
+                                review['comment'] ?? '',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              // Timestamp
+                              Text(
+                                _getTimeAgo(review['timestamp']),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 32),
