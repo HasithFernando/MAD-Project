@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Category item model to hold the data for each category
+/// Category item model to hold the data for each category
 class CategoryItem {
   final String image;
   final String text;
@@ -13,7 +13,7 @@ class CategoryItem {
   });
 }
 
-// Widget for displaying a single category with circle background and text below
+/// Widget for displaying a single category with a circular background and label
 class CategoryCircle extends StatelessWidget {
   final String image;
   final String text;
@@ -28,47 +28,49 @@ class CategoryCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(100),
-            child: Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100),
-                color: const Color(0xFFF8F0E3), // AppColors.categoryColor
-              ),
-              child: Center(
-                child: Image.asset(
-                  image,
-                  width: 32,
-                  height: 32,
-                ),
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(100),
+          child: Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFF8F0E3), // Category background color
+            ),
+            child: Center(
+              child: Image.asset(
+                image,
+                width: 32,
+                height: 32,
+                fit: BoxFit.contain,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 14, // ParagraphTexts.normalParagraph
-                fontWeight: FontWeight.w500,
-              ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: 80, // Keep the label centered and limited in width
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-// Widget to display a horizontal scrollable list of categories
+/// Widget to display a horizontal scrollable list of categories
 class CategoryList extends StatelessWidget {
   final List<CategoryItem> categories;
 
@@ -79,18 +81,29 @@ class CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: categories
-            .map((category) => CategoryCircle(
-                  image: category.image,
-                  text: category.text,
-                  onTap: category.onTap,
-                ))
-            .toList(),
+    if (categories.isEmpty) {
+      return const Center(child: Text("No categories available"));
+    }
+
+    return SizedBox(
+      height: 120, // Ensures enough height for image + text
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          children: List.generate(categories.length, (index) {
+            final category = categories[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: CategoryCircle(
+                image: category.image,
+                text: category.text,
+                onTap: category.onTap,
+              ),
+            );
+          }),
+        ),
       ),
     );
   }

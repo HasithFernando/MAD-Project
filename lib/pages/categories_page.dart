@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:thriftale/models/product_model.dart';
 import 'package:thriftale/pages/product_details.dart';
+import 'package:thriftale/services/product_service.dart';
 import 'package:thriftale/utils/appColors.dart';
 import 'package:thriftale/utils/lable_texts.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
@@ -8,6 +10,7 @@ import 'package:thriftale/widgets/custom_text.dart';
 import 'package:thriftale/widgets/grid_item_model.dart';
 import 'package:thriftale/widgets/newBottomBar.dart';
 import 'package:thriftale/widgets/reusable_category_widget.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -17,150 +20,74 @@ class CategoriesPage extends StatefulWidget {
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  final List<CategoryItem> categories = [
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Shirt',
-      onTap: () {
-        print('Shirt category tapped');
-        // Add your navigation or other logic here
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
-    CategoryItem(
-      image: 'assets/images/shirt.png',
-      text: 'Pants',
-      onTap: () {
-        print('Pants category tapped');
-      },
-    ),
+  final ProductService _productService = ProductService();
+
+  final List<Map<String, String>> staticCategories = [
+    {'name': 'Tops', 'image': 'assets/images/shirt.png'},
+    {'name': 'Bottoms', 'image': 'assets/images/pants.png'},
+    {'name': 'Dresses', 'image': 'assets/images/dress.png'},
+    {'name': 'Outerwear', 'image': 'assets/images/jacket.png'},
+    {'name': 'Footwear', 'image': 'assets/images/shoes.png'},
+    {'name': 'Accessories', 'image': 'assets/images/hat.png'},
   ];
 
-  late List<GridItemModel> sampleItems;
+  List<Product> selectedCategoryProducts = [];
+  String selectedCategory = 'Tops';
 
   @override
   void initState() {
     super.initState();
-    // Initialize sampleItems here where context is available
-    sampleItems = [
-      GridItemModel(
-        title: 'Latest Products',
-        location: 'Colombo',
-        timeAgo: '2 days ago',
-        price: 'Rs. 1000.00',
-        carbonSave: 'Saves 0.2kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 1 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Fresh Vegetables',
-        location: 'Galle',
-        timeAgo: '1 day ago',
-        price: 'Rs. 750.00',
-        carbonSave: 'Saves 0.3kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 2 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-      GridItemModel(
-        title: 'Organic Fruits',
-        location: 'Kandy',
-        timeAgo: '3 hours ago',
-        price: 'Rs. 1500.00',
-        carbonSave: 'Saves 0.5kg CO2',
-        imageUrl:
-            'https://chriscross.in/cdn/shop/files/ChrisCrossNavyBlueCottonT-Shirt.jpg?v=1740994598',
-        onTap: () {
-          print('Item 3 tapped');
-        },
-      ),
-    ];
+    _loadCategoryProducts(selectedCategory);
   }
+
+  Future<void> _loadCategoryProducts(String category) async {
+    final products = await _productService.getProductsByCategory(category);
+    setState(() {
+      selectedCategory = category;
+      selectedCategoryProducts = products;
+    });
+  }
+
+  GridItemModel _productToGridItemModel(Product product) {
+    return GridItemModel(
+      title: product.name,
+      location: product.location,
+      timeAgo: _getTimeAgo(product.timestamp.toDate()),
+      price: _formatPrice(product.price),
+      carbonSave: 'CO2 Saved: ${product.co2Saved.toStringAsFixed(2)}kg',
+      imageUrl: product.imageUrls.isNotEmpty
+          ? product.imageUrls[0]
+          : 'https://via.placeholder.com/150x150.png?text=No+Image',
+      onTap: () {
+        NavigationUtils.frontNavigation(
+            context, ProductDetails(product: product));
+        print('Tapped on product: ${product.name}');
+      },
+    );
+  }
+
+  String _getTimeAgo(DateTime timestamp) {
+    final duration = DateTime.now().difference(timestamp);
+    if (duration.inDays > 0) return '${duration.inDays} days ago';
+    if (duration.inHours > 0) return '${duration.inHours} hours ago';
+    return '${duration.inMinutes} minutes ago';
+  }
+
+  String _formatPrice(double price) => 'Rs. ${price.toStringAsFixed(2)}';
 
   @override
   Widget build(BuildContext context) {
+    List<CategoryItem> categoryWidgets = staticCategories.map((cat) {
+      return CategoryItem(
+        image: cat['image']!,
+        text: cat['name']!,
+        onTap: () => _loadCategoryProducts(cat['name']!),
+      );
+    }).toList();
+
+    List<GridItemModel> gridItems =
+        selectedCategoryProducts.map(_productToGridItemModel).toList();
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -169,15 +96,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
             children: [
               SearchNotificationWidget(
                 placeholder: "Search for products",
-                notificationCount: 3, // Set your notification count here
-                onSearchTap: () {
-                  // Navigate to search screen or show search dialog
-                  print('Search tapped');
-                },
-                onNotificationTap: () {
-                  // Navigate to notifications screen
-                  print('Notification tapped');
-                },
+                notificationCount: 3,
+                onSearchTap: () => print('Search tapped'),
+                onNotificationTap: () => print('Notification tapped'),
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -193,31 +114,22 @@ class _CategoriesPageState extends State<CategoriesPage> {
                             fontWeight: FontWeight.w600),
                       ],
                     ),
-
                     const SizedBox(height: 20),
-
-                    // Category list
-                    CategoryList(categories: categories),
-
+                    CategoryList(categories: categoryWidgets),
                     const SizedBox(height: 20),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         CustomText(
-                            text: 'Shirts',
+                            text: selectedCategory,
                             color: AppColors.black,
                             fontSize: LableTexts.subLable,
                             fontWeight: FontWeight.w600),
                       ],
                     ),
-
-                    SizedBox(
-                      height: 20,
-                    ),
-
+                    const SizedBox(height: 20),
                     CustomGridWidget(
-                      items: sampleItems,
+                      items: gridItems,
                       spacing: 16.0,
                       itemHeight: 320.0,
                     ),

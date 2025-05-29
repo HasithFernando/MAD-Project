@@ -42,7 +42,17 @@ class CustomProductTile extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(productImage),
+                child: productImage.startsWith('http')
+                    ? Image.network(
+                        productImage,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.broken_image),
+                      )
+                    : Image.asset(
+                        productImage,
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             SizedBox(width: 10),

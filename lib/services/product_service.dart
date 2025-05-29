@@ -177,4 +177,21 @@ class ProductService {
     }
     return null;
   }
+
+  Future<List<Product>> getProductsByCategory(String categoryName) async {
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection('products')
+          .where('category', isEqualTo: categoryName)
+          .get();
+
+      return snapshot.docs
+          .map((doc) =>
+              Product.fromFirestore(doc)) // doc is already DocumentSnapshot
+          .toList();
+    } catch (e) {
+      print('Error fetching products by category: $e');
+      return [];
+    }
+  }
 }
