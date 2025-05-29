@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:thriftale/models/product_model.dart';
 import 'package:thriftale/pages/home.dart';
 import 'package:thriftale/utils/pageNavigations.dart';
+import 'package:thriftale/widgets/submit_review_form.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:thriftale/services/cart_service.dart';
@@ -34,27 +35,40 @@ class _ProductDetailsState extends State<ProductDetails> {
     _fetchReviews();
   }
 
+  // Updated fetchReviews method with improved error handling
   void _fetchReviews() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('products')
-        .doc(widget.product.id)
-        .collection('reviews')
-        .orderBy('timestamp', descending: true)
-        .get();
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(widget.product.id)
+          .collection('reviews')
+          .orderBy('timestamp', descending: true)
+          .get();
 
-    double total = 0.0;
-    List<Map<String, dynamic>> loadedReviews = [];
+      double total = 0.0;
+      List<Map<String, dynamic>> loadedReviews = [];
 
-    for (var doc in snapshot.docs) {
-      final data = doc.data();
-      loadedReviews.add(data);
-      total += (data['rating'] as num).toDouble();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        loadedReviews.add(data);
+        total += (data['rating'] as num).toDouble();
+      }
+
+      if (mounted) {
+        setState(() {
+          reviews = loadedReviews;
+          averageRating = reviews.isNotEmpty ? total / reviews.length : 0.0;
+        });
+      }
+    } catch (e) {
+      print('Error fetching reviews: $e');
+      if (mounted) {
+        setState(() {
+          reviews = [];
+          averageRating = 0.0;
+        });
+      }
     }
-
-    setState(() {
-      reviews = loadedReviews;
-      averageRating = reviews.isNotEmpty ? total / reviews.length : 0.0;
-    });
   }
 
   // Helper to format time ago from a Firestore Timestamp
@@ -62,10 +76,6 @@ class _ProductDetailsState extends State<ProductDetails> {
     final DateTime dateTime = timestamp.toDate();
     return timeago.format(dateTime);
   }
-
-  // Rest of your existing methods and build function...
-  // [Keep all other methods and UI code unchanged below this line]
-
 
   // Helper to format price
   String _formatPrice(double price) {
@@ -505,7 +515,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                         height: 1.5,
                       ),
                     ),
-// Reviews and Ratings Section
+
+                    // Reviews and Ratings Section
                     const SizedBox(height: 24),
 
                     const Text(
@@ -517,10 +528,14 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ),
                     const SizedBox(height: 12),
 
-                    SubmitReviewForm(itemId: product.id), // Make sure 'product' has an 'id'
+                    // Updated SubmitReviewForm call with callback
+                    SubmitReviewForm(
+                      itemId: product.id,
+                      onReviewSubmitted:
+                          _fetchReviews, // This will refresh reviews after submission
+                    ),
 
-
-// Average Rating Stars
+                    // Average Rating Stars
                     Row(
                       children: [
                         RatingBarIndicator(
@@ -545,61 +560,62 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ),
                     const SizedBox(height: 12),
 
-// Reviews List
+                    // Reviews List
                     reviews.isEmpty
                         ? Text(
-                      'No reviews yet. Be the first to review this product!',
-                      style: TextStyle(color: Colors.grey.shade600),
-                    )
+                            'No reviews yet. Be the first to review this product!',
+                            style: TextStyle(color: Colors.grey.shade600),
+                          )
                         : ListView.builder(
-                      itemCount: reviews.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final review = reviews[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
+                            itemCount: reviews.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final review = reviews[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Rating
+                                    RatingBarIndicator(
+                                      rating:
+                                          (review['rating'] as num).toDouble(),
+                                      itemBuilder: (context, _) => const Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                      ),
+                                      itemCount: 5,
+                                      itemSize: 20.0,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // Comment
+                                    Text(
+                                      review['comment'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade800,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // Timestamp
+                                    Text(
+                                      _getTimeAgo(review['timestamp']),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Rating
-                              RatingBarIndicator(
-                                rating: (review['rating'] as num).toDouble(),
-                                itemBuilder: (context, _) => const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                ),
-                                itemCount: 5,
-                                itemSize: 20.0,
-                              ),
-                              const SizedBox(height: 4),
-                              // Comment
-                              Text(
-                                review['comment'] ?? '',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              // Timestamp
-                              Text(
-                                _getTimeAgo(review['timestamp']),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
 
                     const SizedBox(height: 32),
                   ],

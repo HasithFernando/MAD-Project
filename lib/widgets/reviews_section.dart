@@ -17,6 +17,20 @@ class ReviewsSection extends StatelessWidget {
             snapshot.docs.map((doc) => Review.fromFirestore(doc)).toList());
   }
 
+  String _formatDate(dynamic timestamp) {
+    DateTime dateTime;
+
+    if (timestamp is Timestamp) {
+      dateTime = timestamp.toDate();
+    } else if (timestamp is DateTime) {
+      dateTime = timestamp;
+    } else {
+      return 'Unknown date';
+    }
+
+    return dateTime.toLocal().toString().split(' ')[0];
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Review>>(
@@ -38,7 +52,7 @@ class ReviewsSection extends StatelessWidget {
                     title: Text('Rating: ${review.rating}/5'),
                     subtitle: Text(review.comment),
                     trailing: Text(
-                      review.timestamp.toDate().toLocal().toString().split(' ')[0],
+                      _formatDate(review.timestamp),
                       style: const TextStyle(fontSize: 12),
                     ),
                   ),
